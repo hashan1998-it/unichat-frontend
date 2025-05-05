@@ -1,6 +1,6 @@
 import { io } from 'socket.io-client';
 
-const socket = io('http://localhost:5000');
+const socket = io('https://unichat-backend-production.up.railway.app');
 
 export const joinRoom = (userId) => {
   socket.emit('join', userId);

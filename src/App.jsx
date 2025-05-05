@@ -1,3 +1,4 @@
+// App.jsx
 import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -5,15 +6,18 @@ import Header from './components/Layout/Header';
 import Login from './components/Auth/Login';
 import Register from './components/Auth/Register';
 import Feed from './components/Dashboard/Feed';
-import PostForm from './components/Dashboard/PostForm';
-import Search from './components/Dashboard/Search';
+import CreatePost from './components/Posts/CreatePost';
 import Profile from './components/Profile/Profile';
 import socket from './utils/socket';
 
 const PrivateRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
   
-  if (loading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  if (loading) return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 to-blue-100">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500"></div>
+    </div>
+  );
   
   return isAuthenticated ? children : <Navigate to="/" />;
 };
@@ -23,10 +27,15 @@ const Dashboard = () => {
   
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="max-w-3xl mx-auto">
-        <Search />
-        <PostForm onPostCreated={() => setFeedKey(prev => prev + 1)} />
-        <Feed key={feedKey} />
+      <div className="max-w-4xl mx-auto">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">University Connect</h1>
+          <p className="text-gray-600">Connect with your university community</p>
+        </div>
+        
+        <div className="grid gap-6">
+          <Feed key={feedKey} />
+        </div>
       </div>
     </div>
   );
@@ -54,6 +63,14 @@ const AppContent = () => {
               element={
                 <PrivateRoute>
                   <Dashboard />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/create-post"
+              element={
+                <PrivateRoute>
+                  <CreatePost />
                 </PrivateRoute>
               }
             />

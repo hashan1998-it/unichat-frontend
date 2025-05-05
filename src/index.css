@@ -1,3 +1,62 @@
+/* Import custom university styles */
+@import './styles/university.css';
+
+/* src/index.css */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+
+/* Base layer customizations */
+@layer base {
+  body {
+    @apply bg-gray-50;
+  }
+  
+  /* Custom input styles */
+  input, textarea {
+    @apply transition-all duration-200;
+  }
+  
+  input:focus, textarea:focus {
+    @apply ring-2 ring-indigo-500 ring-offset-2;
+  }
+}
+
+/* Component layer customizations */
+@layer components {
+  .btn-primary {
+    @apply px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200;
+  }
+  
+  .btn-secondary {
+    @apply px-4 py-2 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors duration-200;
+  }
+  
+  .card {
+    @apply bg-white rounded-lg shadow-md p-6 mb-6 hover-lift;
+  }
+  
+  .input-field {
+    @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent;
+  }
+  
+  .university-container {
+    @apply max-w-4xl mx-auto px-4 py-8;
+  }
+}
+
+/* Utility layer customizations */
+@layer utilities {
+  .text-university-primary {
+    color: var(--university-primary);
+  }
+  
+  .bg-university-primary {
+    background-color: var(--university-primary);
+  }
+  
+  .border-university-primary {
+    border-color: var(--university-primary);
+  }
+}

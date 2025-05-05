@@ -1,7 +1,17 @@
+// src/components/Dashboard/Post.jsx
 import { useState, useEffect } from 'react';
 import api from '../../utils/api';
 import { useAuth } from '../../context/AuthContext';
 import socket, { onPostUpdate, onNewComment } from '../../utils/socket';
+import { 
+  HeartIcon, 
+  ChatBubbleLeftIcon, 
+  ShareIcon,
+  BookmarkIcon,
+  AcademicCapIcon,
+  CalendarIcon
+} from '@heroicons/react/24/outline';
+import { HeartIcon as HeartSolid } from '@heroicons/react/24/solid';
 
 const Post = ({ post: initialPost, onUpdate }) => {
   const [post, setPost] = useState(initialPost);
@@ -36,6 +46,28 @@ const Post = ({ post: initialPost, onUpdate }) => {
     };
   }, [post._id]);
 
+  const getPostTypeIcon = () => {
+    switch (post.postType) {
+      case 'academic':
+        return <AcademicCapIcon className="h-5 w-5 text-blue-500" />;
+      case 'event':
+        return <CalendarIcon className="h-5 w-5 text-green-500" />;
+      default:
+        return null;
+    }
+  };
+
+  const getPostTypeStyle = () => {
+    switch (post.postType) {
+      case 'academic':
+        return 'border-l-4 border-blue-500';
+      case 'event':
+        return 'border-l-4 border-green-500';
+      default:
+        return 'border-l-4 border-gray-300';
+    }
+  };
+
   const handleLike = async () => {
     try {
       const response = await api.post(`/posts/${post._id}/like`);
@@ -61,96 +93,137 @@ const Post = ({ post: initialPost, onUpdate }) => {
   };
 
   return (
-    <div className="bg-white shadow rounded-lg p-6 mb-6">
-      <div className="flex items-center mb-4">
-        <strong className="text-gray-900 font-medium">{post.user.username}</strong>
-        <small className="text-gray-500 ml-4">{new Date(post.createdAt).toLocaleDateString()}</small>
-      </div>
-      
-      <p className="text-gray-700 mb-4">{post.content}</p>
-      
-      {post.image && (
-        <img 
-          src={`http://localhost:5000/${post.image}`} 
-          alt="Post" 
-          className="max-w-full h-auto rounded-lg mb-4"
-        />
-      )}
-      
-      <div className="flex space-x-4 mb-4">
-        <button 
-          onClick={handleLike}
-          className={`inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md ${
-            isLiked
-              ? 'text-red-700 bg-red-100 hover:bg-red-200'
-              : 'text-gray-700 bg-gray-100 hover:bg-gray-200'
-          }`}
-        >
-          {isLiked ? 'Unlike' : 'Like'} ({post.likes.length})
-        </button>
-        <button 
-          onClick={() => setShowCommentForm(!showCommentForm)}
-          className="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-gray-700 bg-gray-100 hover:bg-gray-200"
-        >
-          Comment ({post.comments.length})
-        </button>
-      </div>
-
-      {/* Show Likes Section */}
-      {post.likes.length > 0 && (
-        <div className="mb-4">
-          <button 
-            onClick={() => setShowLikes(!showLikes)}
-            className="text-sm text-gray-600 hover:text-gray-900"
-          >
-            Liked by {post.likes.length} {post.likes.length === 1 ? 'person' : 'people'}
-            {showLikes ? ' (hide)' : ' (show)'}
-          </button>
-          
-          {showLikes && (
-            <div className="mt-2 text-sm text-gray-600">
-              {/* Since we need to get user info for likes, we'll need to update our backend */}
-              Users who liked: {post.likes.map((userId, index) => (
-                <span key={userId}>
-                  {userId}
-                  {index < post.likes.length - 1 ? ', ' : ''}
-                </span>
-              ))}
+    <div className={`bg-white shadow-md rounded-lg mb-6 ${getPostTypeStyle()}`}>
+      <div className="p-6">
+        <div className="flex items-center mb-4">
+          <div className="flex-shrink-0">
+            <div className="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center">
+              <span className="text-indigo-600 font-medium">
+                {post.user.username.charAt(0).toUpperCase()}
+              </span>
             </div>
-          )}
-        </div>
-      )}
-
-      {showCommentForm && (
-        <form onSubmit={handleComment} className="mb-4">
-          <input
-            type="text"
-            value={commentText}
-            onChange={(e) => setCommentText(e.target.value)}
-            placeholder="Add a comment"
-            className="shadow-sm block w-full focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm border border-gray-300 rounded-md mb-2"
-          />
-          <button 
-            type="submit"
-            className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-          >
-            Submit
-          </button>
-        </form>
-      )}
-
-      {/* Comments Section */}
-      {post.comments.map((comment) => (
-        <div key={comment._id} className="bg-gray-50 rounded p-2 mb-2">
-          <strong className="text-gray-900">
-            {comment.user?.username || 'Anonymous'}
-          </strong>
-          <span className="text-gray-700">: {comment.content}</span>
-          <div className="text-xs text-gray-500 mt-1">
-            {new Date(comment.createdAt).toLocaleString()}
+          </div>
+          <div className="ml-3 flex-1">
+            <div className="flex items-center">
+              <p className="text-sm font-medium text-gray-900">
+                {post.user.username}
+              </p>
+              {getPostTypeIcon() && (
+                <span className="ml-2">
+                  {getPostTypeIcon()}
+                </span>
+              )}
+            </div>
+            <p className="text-xs text-gray-500">
+              {new Date(post.createdAt).toLocaleDateString('en-US', {
+                weekday: 'short',
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+              })}
+            </p>
           </div>
         </div>
-      ))}
+        
+        <p className="text-gray-800 text-base mb-4 whitespace-pre-wrap">{post.content}</p>
+        
+        {post.image && (
+          <div className="mb-4 rounded-lg overflow-hidden">
+            <img 
+              src={`http://localhost:5000/${post.image}`} 
+              alt="Post" 
+              className="w-full object-cover"
+            />
+          </div>
+        )}
+        
+        <div className="border-t border-b border-gray-200 py-3 my-4">
+          <div className="flex items-center justify-between px-2">
+            <button 
+              onClick={handleLike}
+              className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors duration-200 ${
+                isLiked
+                  ? 'text-red-600 bg-red-50'
+                  : 'text-gray-600 hover:bg-gray-50'
+              }`}
+            >
+              {isLiked ? (
+                <HeartSolid className="h-5 w-5" />
+              ) : (
+                <HeartIcon className="h-5 w-5" />
+              )}
+              <span className="text-sm font-medium">{post.likes.length}</span>
+            </button>
+            <button 
+              onClick={() => setShowCommentForm(!showCommentForm)}
+              className="flex items-center space-x-2 px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors duration-200"
+            >
+              <ChatBubbleLeftIcon className="h-5 w-5" />
+              <span className="text-sm font-medium">{post.comments.length}</span>
+            </button>
+            <button 
+              className="flex items-center space-x-2 px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors duration-200"
+            >
+              <ShareIcon className="h-5 w-5" />
+              <span className="text-sm font-medium">Share</span>
+            </button>
+            <button 
+              className="flex items-center space-x-2 px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors duration-200"
+            >
+              <BookmarkIcon className="h-5 w-5" />
+            </button>
+          </div>
+        </div>
+
+        {showCommentForm && (
+          <form onSubmit={handleComment} className="mb-4">
+            <div className="flex space-x-3">
+              <div className="flex-shrink-0">
+                <div className="h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center">
+                  <span className="text-indigo-600 font-medium text-sm">
+                    {user?.username.charAt(0).toUpperCase()}
+                  </span>
+                </div>
+              </div>
+              <div className="flex-1">
+                <input
+                  type="text"
+                  value={commentText}
+                  onChange={(e) => setCommentText(e.target.value)}
+                  placeholder="Write a comment..."
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                />
+              </div>
+            </div>
+          </form>
+        )}
+
+        {/* Comments Section */}
+        {post.comments.map((comment) => (
+          <div key={comment._id} className="flex space-x-3 mb-4">
+            <div className="flex-shrink-0">
+              <div className="h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center">
+                <span className="text-gray-600 font-medium text-sm">
+                  {comment.user?.username?.charAt(0).toUpperCase() || 'A'}
+                </span>
+              </div>
+            </div>
+            <div className="flex-1">
+              <div className="bg-gray-50 rounded-lg px-4 py-2">
+                <p className="text-sm font-medium text-gray-900">
+                  {comment.user?.username || 'Anonymous'}
+                </p>
+                <p className="text-sm text-gray-700">{comment.content}</p>
+              </div>
+              <p className="text-xs text-gray-500 mt-1 ml-4">
+                {new Date(comment.createdAt).toLocaleDateString()}
+              </p>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 };

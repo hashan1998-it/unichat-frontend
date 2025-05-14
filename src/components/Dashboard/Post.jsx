@@ -3,24 +3,34 @@ import { useState, useEffect } from 'react';
 import api from '../../utils/api';
 import { useAuth } from '../../context/AuthContext';
 import socket, { onPostUpdate, onNewComment } from '../../utils/socket';
-import { 
-  HeartIcon, 
-  ChatBubbleLeftIcon, 
-  ShareIcon,
-  BookmarkIcon,
-  AcademicCapIcon,
-  CalendarIcon
-} from '@heroicons/react/24/outline';
-import { HeartIcon as HeartSolid } from '@heroicons/react/24/solid';
+import { formatDistanceToNow } from 'date-fns';
 
 const Post = ({ post: initialPost, onUpdate }) => {
   const [post, setPost] = useState(initialPost);
   const [commentText, setCommentText] = useState('');
   const [showCommentForm, setShowCommentForm] = useState(false);
-  const [showLikes, setShowLikes] = useState(false);
+  const [showAllComments, setShowAllComments] = useState(false);
   const { user } = useAuth();
 
   const isLiked = post.likes.includes(user?._id);
+
+  // Format time for comments (shorter format)
+  const formatCommentTime = (date) => {
+    const distance = formatDistanceToNow(new Date(date), { addSuffix: true });
+    // Convert "about 2 hours ago" to "2h ago", "5 minutes ago" to "5m ago", etc.
+    return distance
+      .replace('about ', '')
+      .replace(' minutes', 'm')
+      .replace(' minute', 'm')
+      .replace(' hours', 'h')
+      .replace(' hour', 'h')
+      .replace(' days', 'd')
+      .replace(' day', 'd')
+      .replace(' months', 'mo')
+      .replace(' month', 'mo')
+      .replace(' years', 'y')
+      .replace(' year', 'y');
+  };
 
   useEffect(() => {
     // Listen for updates to this specific post
@@ -45,28 +55,6 @@ const Post = ({ post: initialPost, onUpdate }) => {
       socket.off('newComment');
     };
   }, [post._id]);
-
-  const getPostTypeIcon = () => {
-    switch (post.postType) {
-      case 'academic':
-        return <AcademicCapIcon className="h-5 w-5 text-blue-500" />;
-      case 'event':
-        return <CalendarIcon className="h-5 w-5 text-green-500" />;
-      default:
-        return null;
-    }
-  };
-
-  const getPostTypeStyle = () => {
-    switch (post.postType) {
-      case 'academic':
-        return 'border-l-4 border-blue-500';
-      case 'event':
-        return 'border-l-4 border-green-500';
-      default:
-        return 'border-l-4 border-gray-300';
-    }
-  };
 
   const handleLike = async () => {
     try {
@@ -93,137 +81,137 @@ const Post = ({ post: initialPost, onUpdate }) => {
   };
 
   return (
-    <div className={`bg-white shadow-md rounded-lg mb-6 ${getPostTypeStyle()}`}>
-      <div className="p-6">
-        <div className="flex items-center mb-4">
+    <div className="bg-white rounded-lg shadow-sm mb-4">
+      {/* Post Header */}
+      <div className="p-4">
+        <div className="flex items-center">
           <div className="flex-shrink-0">
-            <div className="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center">
-              <span className="text-indigo-600 font-medium">
+            <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
+              <span className="text-gray-700 font-medium">
                 {post.user.username.charAt(0).toUpperCase()}
               </span>
             </div>
           </div>
-          <div className="ml-3 flex-1">
-            <div className="flex items-center">
-              <p className="text-sm font-medium text-gray-900">
-                {post.user.username}
-              </p>
-              {getPostTypeIcon() && (
-                <span className="ml-2">
-                  {getPostTypeIcon()}
-                </span>
-              )}
-            </div>
+          <div className="ml-3">
+            <p className="text-sm font-semibold text-gray-900">{post.user.username}</p>
             <p className="text-xs text-gray-500">
-              {new Date(post.createdAt).toLocaleDateString('en-US', {
-                weekday: 'short',
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-              })}
+              {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}
             </p>
           </div>
         </div>
-        
-        <p className="text-gray-800 text-base mb-4 whitespace-pre-wrap">{post.content}</p>
-        
-        {post.image && (
-          <div className="mb-4 rounded-lg overflow-hidden">
-            <img 
-              src={`http://localhost:5000/${post.image}`} 
-              alt="Post" 
-              className="w-full object-cover"
-            />
+      </div>
+
+      {/* Post Content */}
+      <div className="px-4 pb-2">
+        <p className="text-gray-800 text-base">{post.content}</p>
+      </div>
+
+      {/* Post Image */}
+      {post.image && (
+        <div className="relative w-full aspect-square">
+          <img 
+            src={`http://localhost:5000/${post.image}`} 
+            alt="Post" 
+            className="w-full h-full object-cover"
+          />
+        </div>
+      )}
+
+      {/* Interaction Section */}
+      <div className="px-4 pt-2 pb-1">
+        <div className="flex items-center space-x-4">
+          <div className="text-sm text-gray-700">
+            {post.likes.length > 0 && (
+              <span>{post.likes.length} {post.likes.length === 1 ? 'like' : 'likes'}</span>
+            )}
           </div>
-        )}
-        
-        <div className="border-t border-b border-gray-200 py-3 my-4">
-          <div className="flex items-center justify-between px-2">
-            <button 
-              onClick={handleLike}
-              className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors duration-200 ${
-                isLiked
-                  ? 'text-red-600 bg-red-50'
-                  : 'text-gray-600 hover:bg-gray-50'
-              }`}
-            >
-              {isLiked ? (
-                <HeartSolid className="h-5 w-5" />
-              ) : (
-                <HeartIcon className="h-5 w-5" />
-              )}
-              <span className="text-sm font-medium">{post.likes.length}</span>
-            </button>
-            <button 
-              onClick={() => setShowCommentForm(!showCommentForm)}
-              className="flex items-center space-x-2 px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors duration-200"
-            >
-              <ChatBubbleLeftIcon className="h-5 w-5" />
-              <span className="text-sm font-medium">{post.comments.length}</span>
-            </button>
-            <button 
-              className="flex items-center space-x-2 px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors duration-200"
-            >
-              <ShareIcon className="h-5 w-5" />
-              <span className="text-sm font-medium">Share</span>
-            </button>
-            <button 
-              className="flex items-center space-x-2 px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors duration-200"
-            >
-              <BookmarkIcon className="h-5 w-5" />
-            </button>
+          <div className="text-sm text-gray-700">
+            {post.comments.length > 0 && (
+              <span>{post.comments.length} {post.comments.length === 1 ? 'comment' : 'comments'}</span>
+            )}
           </div>
         </div>
+      </div>
 
-        {showCommentForm && (
-          <form onSubmit={handleComment} className="mb-4">
-            <div className="flex space-x-3">
-              <div className="flex-shrink-0">
-                <div className="h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center">
-                  <span className="text-indigo-600 font-medium text-sm">
-                    {user?.username.charAt(0).toUpperCase()}
-                  </span>
+      {/* Action Buttons */}
+      <div className="border-t border-gray-200 px-4 py-2">
+        <div className="flex items-center justify-between">
+          <button 
+            onClick={handleLike}
+            className={`flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors`}
+          >
+            <svg 
+              className={`h-5 w-5 ${isLiked ? 'fill-red-500 text-red-500' : ''}`} 
+              fill={isLiked ? 'currentColor' : 'none'} 
+              viewBox="0 0 24 24" 
+              stroke="currentColor"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+            </svg>
+            <span className="text-sm font-medium">Like</span>
+          </button>
+          
+          <button 
+            onClick={() => setShowCommentForm(!showCommentForm)}
+            className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors"
+          >
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+            </svg>
+            <span className="text-sm font-medium">Comment</span>
+          </button>
+
+          <button className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors">
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+            </svg>
+            <span className="text-sm font-medium">Share</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Comments Section */}
+      {showCommentForm && (
+        <div className="px-4 py-2 border-t border-gray-200">
+          <form onSubmit={handleComment} className="space-y-2">
+            <input
+              type="text"
+              value={commentText}
+              onChange={(e) => setCommentText(e.target.value)}
+              placeholder="Write a comment..."
+              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-1 focus:ring-gray-400 focus:border-transparent"
+            />
+          </form>
+          
+          {/* Display comments */}
+          <div className="mt-3 space-y-3">
+            {post.comments
+              .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+              .map((comment) => (
+              <div key={comment._id} className="flex space-x-3">
+                <div className="flex-shrink-0">
+                  <div className="h-8 w-8 rounded-full bg-gray-300 flex items-center justify-center">
+                    <span className="text-gray-700 text-xs font-medium">
+                      {comment.user?.username?.charAt(0).toUpperCase() || 'A'}
+                    </span>
+                  </div>
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-baseline gap-2">
+                    <p className="text-sm font-semibold text-gray-900">
+                      {comment.user?.username || 'Anonymous'}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {formatCommentTime(comment.createdAt)}
+                    </p>
+                  </div>
+                  <p className="text-sm text-gray-700 mt-0.5">{comment.content}</p>
                 </div>
               </div>
-              <div className="flex-1">
-                <input
-                  type="text"
-                  value={commentText}
-                  onChange={(e) => setCommentText(e.target.value)}
-                  placeholder="Write a comment..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                />
-              </div>
-            </div>
-          </form>
-        )}
-
-        {/* Comments Section */}
-        {post.comments.map((comment) => (
-          <div key={comment._id} className="flex space-x-3 mb-4">
-            <div className="flex-shrink-0">
-              <div className="h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center">
-                <span className="text-gray-600 font-medium text-sm">
-                  {comment.user?.username?.charAt(0).toUpperCase() || 'A'}
-                </span>
-              </div>
-            </div>
-            <div className="flex-1">
-              <div className="bg-gray-50 rounded-lg px-4 py-2">
-                <p className="text-sm font-medium text-gray-900">
-                  {comment.user?.username || 'Anonymous'}
-                </p>
-                <p className="text-sm text-gray-700">{comment.content}</p>
-              </div>
-              <p className="text-xs text-gray-500 mt-1 ml-4">
-                {new Date(comment.createdAt).toLocaleDateString()}
-              </p>
-            </div>
+            ))}
           </div>
-        ))}
-      </div>
+        </div>
+      )}
     </div>
   );
 };

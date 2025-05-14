@@ -1,8 +1,9 @@
 // App.jsx
 import { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Header from './components/Layout/Header';
+import Sidebar from './components/Layout/Sidebar';
 import Login from './components/Auth/Login';
 import Register from './components/Auth/Register';
 import Feed from './components/Dashboard/Feed';
@@ -22,21 +23,26 @@ const PrivateRoute = ({ children }) => {
   return isAuthenticated ? children : <Navigate to="/" />;
 };
 
+// Layout wrapper for authenticated routes
+const AuthenticatedLayout = () => {
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <Sidebar />
+      <Header />
+      <div className="ml-64 pt-16">
+        <Outlet />
+      </div>
+    </div>
+  );
+};
+
 const Dashboard = () => {
   const [feedKey, setFeedKey] = useState(0);
   
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="max-w-4xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">University Connect</h1>
-          <p className="text-gray-600">Connect with your university community</p>
-        </div>
-        
-        <div className="grid gap-6">
-          <Feed key={feedKey} />
-        </div>
-      </div>
+    <div className="max-w-3xl mx-auto py-6 px-4">
+      <h1 className="text-2xl font-bold text-gray-900 mb-6">Home</h1>
+      <Feed key={feedKey} />
     </div>
   );
 };
@@ -52,41 +58,57 @@ const AppContent = () => {
   
   return (
     <Router>
-      <div className="min-h-screen bg-gray-50">
-        <Header />
-        <main>
-          <Routes>
-            <Route path="/" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route
-              path="/dashboard"
-              element={
-                <PrivateRoute>
-                  <Dashboard />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/create-post"
-              element={
-                <PrivateRoute>
-                  <CreatePost />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/profile/:id?"
-              element={
-                <PrivateRoute>
-                  <div className="container mx-auto px-4 py-8">
-                    <Profile />
-                  </div>
-                </PrivateRoute>
-              }
-            />
-          </Routes>
-        </main>
-      </div>
+      <Routes>
+        <Route path="/" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        
+        {/* Protected routes with layout */}
+        <Route element={<PrivateRoute><AuthenticatedLayout /></PrivateRoute>}>
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/create-post" element={<CreatePost />} />
+          <Route path="/profile/:id?" element={
+            <div className="max-w-3xl mx-auto py-6 px-4">
+              <Profile />
+            </div>
+          } />
+          <Route path="/explore" element={
+            <div className="max-w-3xl mx-auto py-6 px-4">
+              <h1 className="text-2xl font-bold text-gray-900 mb-6">Explore</h1>
+              <p className="text-gray-600">Discover new content and people</p>
+            </div>
+          } />
+          <Route path="/research" element={
+            <div className="max-w-3xl mx-auto py-6 px-4">
+              <h1 className="text-2xl font-bold text-gray-900 mb-6">Research</h1>
+              <p className="text-gray-600">Academic research and papers</p>
+            </div>
+          } />
+          <Route path="/events" element={
+            <div className="max-w-3xl mx-auto py-6 px-4">
+              <h1 className="text-2xl font-bold text-gray-900 mb-6">Events</h1>
+              <p className="text-gray-600">University events and activities</p>
+            </div>
+          } />
+          <Route path="/groups" element={
+            <div className="max-w-3xl mx-auto py-6 px-4">
+              <h1 className="text-2xl font-bold text-gray-900 mb-6">Groups</h1>
+              <p className="text-gray-600">Join study groups and communities</p>
+            </div>
+          } />
+          <Route path="/courses" element={
+            <div className="max-w-3xl mx-auto py-6 px-4">
+              <h1 className="text-2xl font-bold text-gray-900 mb-6">Courses</h1>
+              <p className="text-gray-600">Your enrolled courses</p>
+            </div>
+          } />
+          <Route path="/settings" element={
+            <div className="max-w-3xl mx-auto py-6 px-4">
+              <h1 className="text-2xl font-bold text-gray-900 mb-6">Settings</h1>
+              <p className="text-gray-600">Manage your account settings</p>
+            </div>
+          } />
+        </Route>
+      </Routes>
     </Router>
   );
 };

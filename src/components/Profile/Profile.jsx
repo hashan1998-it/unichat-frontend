@@ -64,10 +64,10 @@ const Profile = () => {
   );
 
   return (
-    <div className="max-w-3xl mx-auto">
+    <div>
+      <h1 className="text-2xl font-bold text-gray-900 mb-6">Profile</h1>
+      
       <div className="bg-white shadow rounded-lg p-6 mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 mb-4">User Profile</h1>
-        
         <div className="mb-4">
           <h2 className="text-xl font-semibold text-gray-800">{user.username}</h2>
           
@@ -77,19 +77,19 @@ const Profile = () => {
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
                 placeholder="Bio"
-                className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border border-gray-300 rounded-md"
+                className="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border border-gray-300 rounded-md"
                 rows="3"
               />
               <div className="mt-2">
                 <button 
                   onClick={handleSaveProfile}
-                  className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 >
                   Save
                 </button>
                 <button 
                   onClick={() => setEditMode(false)}
-                  className="ml-3 inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  className="ml-3 inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 >
                   Cancel
                 </button>
@@ -106,7 +106,7 @@ const Profile = () => {
                 className={`inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white ${
                   isFollowing 
                     ? 'bg-red-600 hover:bg-red-700 focus:ring-red-500' 
-                    : 'bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500'
+                    : 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500'
                 } focus:outline-none focus:ring-2 focus:ring-offset-2`}
               >
                 {isFollowing ? 'Unfollow' : 'Follow'}
@@ -115,7 +115,7 @@ const Profile = () => {
             {isOwnProfile && (
               <button 
                 onClick={() => setEditMode(true)}
-                className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
                 Edit Profile
               </button>

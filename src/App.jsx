@@ -10,6 +10,7 @@ import Feed from './components/Dashboard/Feed';
 import CreatePost from './components/Posts/CreatePost';
 import Profile from './components/Profile/Profile';
 import socket from './utils/socket';
+import Explore from './components/Explore/Explore';
 
 const PrivateRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
@@ -73,8 +74,7 @@ const AppContent = () => {
           } />
           <Route path="/explore" element={
             <div className="max-w-3xl mx-auto py-6 px-4">
-              <h1 className="text-2xl font-bold text-gray-900 mb-6">Explore</h1>
-              <p className="text-gray-600">Discover new content and people</p>
+              <Explore/>
             </div>
           } />
           <Route path="/research" element={

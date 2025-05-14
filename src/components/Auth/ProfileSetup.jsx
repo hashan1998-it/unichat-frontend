@@ -71,8 +71,8 @@ const ProfileSetup = () => {
       
       <div className="max-w-lg w-full bg-white rounded-3xl shadow-2xl p-8 relative z-10">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Complete Your Profile</h1>
-          <p className="text-gray-600">Add a profile picture to help others recognize you</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome, {user?.username}!</h1>
+          <p className="text-gray-600">Let's complete your profile by adding a picture</p>
         </div>
 
         {error && (
@@ -92,7 +92,7 @@ const ProfileSetup = () => {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="text-center">
+          <div className="flex flex-col items-center justify-center">
             {previewUrl ? (
               <div className="relative inline-block">
                 <img
@@ -114,7 +114,7 @@ const ProfileSetup = () => {
                 </button>
               </div>
             ) : (
-              <label className="cursor-pointer">
+              <label className="cursor-pointer flex flex-col items-center">
                 <div className="w-40 h-40 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors">
                   <UserCircleIcon className="w-20 h-20 text-gray-400" />
                 </div>

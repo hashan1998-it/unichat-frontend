@@ -167,11 +167,19 @@ const Sidebar = () => {
           <div className="p-4 border-t border-gray-200">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
-                  <span className="text-gray-700 font-medium">
-                    {user?.username?.charAt(0).toUpperCase() || 'U'}
-                  </span>
-                </div>
+                {user?.profilePicture ? (
+                  <img
+                    src={user.profilePicture}
+                    alt={`${user.username}'s profile`}
+                    className="h-10 w-10 rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
+                    <span className="text-gray-700 font-medium">
+                      {user?.username?.charAt(0).toUpperCase() || 'U'}
+                    </span>
+                  </div>
+                )}
               </div>
               <div className="ml-3">
                 <p className="text-sm font-medium text-gray-900">{user?.username}</p>

@@ -18,7 +18,7 @@ const Register = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-  const { register } = useAuth();
+  const { register, login } = useAuth();
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -65,7 +65,8 @@ const Register = () => {
     
     setLoading(true);
     try {
-      await register(
+      // Register the user
+      const registerResponse = await register(
         formData.username, 
         formData.email, 
         formData.password,
@@ -74,6 +75,9 @@ const Register = () => {
       );
       
       setShowSuccess(true);
+      
+      // Automatically log in after registration
+      await login(formData.email, formData.password);
       
       // Navigate to profile picture section after 2 seconds
       setTimeout(() => {

@@ -1,7 +1,9 @@
+// src/components/Notifications/NotificationButton.jsx
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { BellIcon } from '@heroicons/react/24/outline';
 import api from '@utils/api';
+import socketService from '@utils/socket';
 
 const NotificationButton = () => {
   const [notifications, setNotifications] = useState([]);
@@ -41,15 +43,16 @@ const NotificationButton = () => {
     fetchNotifications();
     fetchUnreadCount();
 
-    // Poll for new notifications every 30 seconds
-    const interval = setInterval(() => {
-      console.log('Polling for new notifications...');
-      fetchUnreadCount();
-    }, 30000);
+    // Set up socket listener for real-time notifications
+    const cleanup = socketService.onNotification((notification) => {
+      console.log('Received real-time notification:', notification);
+      setNotifications(prev => [notification, ...prev]);
+      setUnreadCount(prev => prev + 1);
+    });
 
     return () => {
       console.log('NotificationButton unmounting');
-      clearInterval(interval);
+      cleanup();
     };
   }, []);
 
@@ -194,4 +197,4 @@ const NotificationButton = () => {
   );
 };
 
-export default NotificationButton; 
+export default NotificationButton;

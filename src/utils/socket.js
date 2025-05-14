@@ -1,70 +1,166 @@
 import { io } from 'socket.io-client';
-import config from '../config';
+import { getToken } from '@utils/auth';
 
-const socket = io(config.SOCKET_URL, {
-  transports: ['websocket'],
-  reconnection: true,
-  reconnectionAttempts: 5,
-  reconnectionDelay: 1000,
-  auth: {
-    token: localStorage.getItem('token')
-  },
-  withCredentials: true
-});
+const SOCKET_URL = 'http://localhost:5000';
 
-// Connection events for debugging (only in development)
-if (config.isDevelopment) {
-  socket.on('connect', () => {});
+class SocketService {
+  constructor() {
+    this.socket = null;
+    this.notificationCallbacks = new Set();
+    this.commentCallbacks = new Set();
+    this.postUpdateCallbacks = new Set();
+    this.newPostCallbacks = new Set();
+  }
 
-  socket.on('disconnect', (reason) => {});
+  connect() {
+    if (this.socket?.connected) return;
 
-  socket.on('connect_error', (error) => {});
+    const token = getToken();
+    if (!token) return;
+
+    this.socket = io(SOCKET_URL, {
+      auth: {
+        token
+      }
+    });
+
+    this.socket.on('connect', () => {
+      console.log('Socket connected');
+    });
+
+    this.socket.on('disconnect', () => {
+      console.log('Socket disconnected');
+    });
+
+    this.socket.on('error', (error) => {
+      console.error('Socket error:', error);
+    });
+
+    // Listen for notifications
+    this.socket.on('newNotification', (notification) => {
+      console.log('New notification received:', notification);
+      this.notificationCallbacks.forEach(callback => callback(notification));
+    });
+
+    // Fallback event names
+    this.socket.on('new-notification', (notification) => {
+      console.log('New notification received (alternative event):', notification);
+      this.notificationCallbacks.forEach(callback => callback(notification));
+    });
+
+    this.socket.on('notification', (notification) => {
+      console.log('New notification received (fallback event):', notification);
+      this.notificationCallbacks.forEach(callback => callback(notification));
+    });
+
+    // Listen for new comments
+    this.socket.on('newComment', (comment) => {
+      console.log('New comment received:', comment);
+      this.commentCallbacks.forEach(callback => callback(comment));
+    });
+
+    this.socket.on('new-comment', (comment) => {
+      console.log('New comment received (alternative event):', comment);
+      this.commentCallbacks.forEach(callback => callback(comment));
+    });
+
+    // Listen for post updates
+    this.socket.on('postUpdated', (post) => {
+      console.log('Post update received:', post);
+      this.postUpdateCallbacks.forEach(callback => callback(post));
+    });
+
+    this.socket.on('post-updated', (post) => {
+      console.log('Post update received (alternative event):', post);
+      this.postUpdateCallbacks.forEach(callback => callback(post));
+    });
+
+    // Listen for new posts
+    this.socket.on('newPost', (post) => {
+      console.log('New post received:', post);
+      this.newPostCallbacks.forEach(callback => callback(post));
+    });
+
+    this.socket.on('new-post', (post) => {
+      console.log('New post received (alternative event):', post);
+      this.newPostCallbacks.forEach(callback => callback(post));
+    });
+  }
+
+  disconnect() {
+    if (this.socket) {
+      this.socket.disconnect();
+      this.socket = null;
+    }
+  }
+
+  onNotification(callback) {
+    this.notificationCallbacks.add(callback);
+    
+    // If socket isn't connected yet, connect it
+    if (!this.socket?.connected) {
+      this.connect();
+    }
+
+    // Return cleanup function
+    return () => {
+      this.notificationCallbacks.delete(callback);
+    };
+  }
+
+  onNewComment(callback) {
+    this.commentCallbacks.add(callback);
+    
+    // If socket isn't connected yet, connect it
+    if (!this.socket?.connected) {
+      this.connect();
+    }
+
+    // Return cleanup function
+    return () => {
+      this.commentCallbacks.delete(callback);
+    };
+  }
+
+  onPostUpdate(callback) {
+    this.postUpdateCallbacks.add(callback);
+    
+    // If socket isn't connected yet, connect it
+    if (!this.socket?.connected) {
+      this.connect();
+    }
+
+    // Return cleanup function
+    return () => {
+      this.postUpdateCallbacks.delete(callback);
+    };
+  }
+
+  onNewPost(callback) {
+    this.newPostCallbacks.add(callback);
+    
+    // If socket isn't connected yet, connect it
+    if (!this.socket?.connected) {
+      this.connect();
+    }
+
+    // Return cleanup function
+    return () => {
+      this.newPostCallbacks.delete(callback);
+    };
+  }
+
+  // Emit events
+  emit(event, data) {
+    if (this.socket?.connected) {
+      this.socket.emit(event, data);
+    } else {
+      console.warn('Socket not connected. Cannot emit event:', event);
+    }
+  }
 }
 
-// Update auth token when it changes
-export const updateAuthToken = () => {
-  const token = localStorage.getItem('token');
-  socket.auth = { token };
-};
+// Create a singleton instance
+const socketService = new SocketService();
 
-export const joinRoom = (userId) => {
-  socket.emit('join', userId);
-};
-
-export const onNotification = (callback) => {
-  socket.on('newNotification', callback);
-};
-
-// Real-time post events
-export const onNewPost = (callback) => {
-  socket.on('new-post', callback);
-  // Also try alternative event names the backend might use
-  socket.on('newPost', callback);
-};
-
-export const onPostUpdate = (callback) => {
-  socket.on('post-updated', callback);
-  // Also try alternative event names
-  socket.on('postUpdated', callback);
-};
-
-export const onNewComment = (callback) => {
-  socket.on('new-comment', callback);
-  // Also try alternative event names
-  socket.on('newComment', callback);
-};
-
-// Clean up listeners
-export const removePostListeners = () => {
-  socket.off('new-post');
-  socket.off('post-updated');
-  socket.off('new-comment');
-  socket.off('newPost');
-  socket.off('postUpdated');
-  socket.off('newComment');
-};
-
-// Check if socket is connected
-export const isConnected = () => socket.connected;
-
-export default socket;
+export default socketService;

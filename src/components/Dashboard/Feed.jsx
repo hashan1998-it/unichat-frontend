@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import api from '../../utils/api';
+import api from '@utils/api';
 import Post from './Post';
-import socket, { onNewPost, onPostUpdate } from '../../utils/socket';
+import socketService from '@utils/socket';
 import { Link } from 'react-router-dom';
 import { PlusCircleIcon } from '@heroicons/react/24/outline';
 
@@ -24,12 +24,12 @@ const Feed = () => {
     loadFeed();
     
     // Listen for new posts
-    onNewPost((newPost) => {
+    const newPostCleanup = socketService.onNewPost((newPost) => {
       setPosts(prevPosts => [newPost, ...prevPosts]);
     });
     
     // Listen for post updates (likes)
-    onPostUpdate((updatedPost) => {
+    const postUpdateCleanup = socketService.onPostUpdate((updatedPost) => {
       setPosts(prevPosts => 
         prevPosts.map(post => 
           post._id === updatedPost._id ? updatedPost : post
@@ -38,8 +38,8 @@ const Feed = () => {
     });
     
     return () => {
-      socket.off('newPost');
-      socket.off('postUpdated');
+      newPostCleanup();
+      postUpdateCleanup();
     };
   }, []);
 

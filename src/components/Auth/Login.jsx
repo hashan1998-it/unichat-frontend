@@ -8,16 +8,39 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError(""); // Clear previous errors
+    setLoading(true);
+    
+    // Validate inputs
+    if (!email || !password) {
+      setError("Please fill in all fields");
+      setLoading(false);
+      return;
+    }
+    
     try {
       await login(email, password);
       navigate("/dashboard");
     } catch (error) {
-      setError(error.response?.data?.message || "Failed to login");
+      // Handle different error types
+      if (error.response) {
+        // Server responded with error
+        setError(error.response.data.message || "Invalid credentials");
+      } else if (error.request) {
+        // Request made but no response
+        setError("Unable to connect to server. Please try again.");
+      } else {
+        // Something else happened
+        setError("An unexpected error occurred. Please try again.");
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -114,9 +137,12 @@ const Login = () => {
           <div>
             <button
               type="submit"
-              className="w-full flex justify-center py-3 px-4 btn-primary"
+              disabled={loading}
+              className={`w-full flex justify-center py-3 px-4 btn-primary ${
+                loading ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
             >
-              Sign in
+              {loading ? 'Signing in...' : 'Sign in'}
             </button>
           </div>
 

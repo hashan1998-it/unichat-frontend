@@ -23,7 +23,6 @@ export const AuthProvider = ({ children }) => {
       const response = await api.get(`/users/profile/${userId}`);
       setUser(response.data);
     } catch (error) {
-      console.error('Error loading user:', error);
       logout();
     } finally {
       setLoading(false);
@@ -31,14 +30,18 @@ export const AuthProvider = ({ children }) => {
   };
 
   const login = async (email, password) => {
-    const response = await api.post('/auth/login', { email, password });
-    const { token, userId } = response.data;
-    
-    localStorage.setItem('token', token);
-    localStorage.setItem('userId', userId);
-    
-    await loadUser(userId);
-    return response.data;
+    try {
+      const response = await api.post('/auth/login', { email, password });
+      const { token, userId } = response.data;
+      
+      localStorage.setItem('token', token);
+      localStorage.setItem('userId', userId);
+      
+      await loadUser(userId);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
   };
 
   const register = async (username, email, password) => {

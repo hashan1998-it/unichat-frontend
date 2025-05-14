@@ -2,11 +2,12 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import { AcademicCapIcon, EnvelopeIcon, LockClosedIcon } from "@heroicons/react/24/outline";
+import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
@@ -14,10 +15,9 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(""); // Clear previous errors
+    setError("");
     setLoading(true);
     
-    // Validate inputs
     if (!email || !password) {
       setError("Please fill in all fields");
       setLoading(false);
@@ -28,15 +28,11 @@ const Login = () => {
       await login(email, password);
       navigate("/dashboard");
     } catch (error) {
-      // Handle different error types
       if (error.response) {
-        // Server responded with error
         setError(error.response.data.message || "Invalid credentials");
       } else if (error.request) {
-        // Request made but no response
         setError("Unable to connect to server. Please try again.");
       } else {
-        // Something else happened
         setError("An unexpected error occurred. Please try again.");
       }
     } finally {
@@ -44,117 +40,120 @@ const Login = () => {
     }
   };
 
+  const handleGoogleLogin = () => {
+    console.log("Google login clicked");
+  };
+
+  const handleFacebookLogin = () => {
+    console.log("Facebook login clicked");
+  };
+
   return (
-    <div className="min-h-screen university-auth-bg flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8 glass-morphism p-8 rounded-lg">
-        <div className="text-center">
-          <div className="flex justify-center">
-            <AcademicCapIcon className="h-16 w-16 text-indigo-600" />
+    <div className="min-h-screen bg-gradient-to-br from-blue-100 via-blue-50 to-blue-100 flex items-center justify-center p-4">
+      {/* Abstract curved shapes */}
+      <div className="absolute top-0 left-0 w-96 h-96 bg-blue-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob"></div>
+      <div className="absolute top-0 right-0 w-72 h-72 bg-blue-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-2000"></div>
+      <div className="absolute bottom-0 left-20 w-72 h-72 bg-blue-300 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-4000"></div>
+      
+      <div className="max-w-6xl w-full flex bg-white rounded-3xl shadow-2xl overflow-hidden relative z-10">
+        {/* Left Side - Form */}
+        <div className="w-full lg:w-1/2 p-8 lg:p-12">
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Log In</h1>
+            <p className="text-gray-600">Welcome back! Please enter your details</p>
           </div>
-          <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
-            Welcome to UniConnect
-          </h2>
-          <p className="mt-2 text-sm text-gray-600">
-            Sign in to your university account
-          </p>
-        </div>
-        {error && (
-          <div className="bg-red-50 border-l-4 border-red-400 p-4">
-            <div className="flex">
-              <div className="flex-shrink-0">
-                <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                </svg>
-              </div>
-              <div className="ml-3">
-                <p className="text-sm text-red-700">{error}</p>
-              </div>
+
+          {error && (
+            <div className="mb-6 p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm">
+              {error}
             </div>
-          </div>
-        )}
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="space-y-4">
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email address
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                Email
               </label>
-              <div className="mt-1 relative">
-                <EnvelopeIcon className="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="pl-10 input-field"
-                  placeholder="Enter your university email"
-                />
-              </div>
+              <input
+                id="email"
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                placeholder="Enter your email"
+              />
             </div>
+
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
                 Password
               </label>
-              <div className="mt-1 relative">
-                <LockClosedIcon className="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <div className="relative">
                 <input
                   id="password"
-                  name="password"
-                  type="password"
-                  autoComplete="current-password"
+                  type={showPassword ? "text" : "password"}
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="pl-10 input-field"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all pr-12"
                   placeholder="Enter your password"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                >
+                  {showPassword ? (
+                    <EyeSlashIcon className="h-5 w-5" />
+                  ) : (
+                    <EyeIcon className="h-5 w-5" />
+                  )}
+                </button>
+              </div>
+              <div className="mt-2 text-right">
+                <a href="#" className="text-sm text-blue-600 hover:text-blue-700">
+                  forgot password?
+                </a>
               </div>
             </div>
-          </div>
 
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <input
-                id="remember-me"
-                name="remember-me"
-                type="checkbox"
-                className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-              />
-              <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700">
-                Remember me
-              </label>
-            </div>
-
-            <div className="text-sm">
-              <a href="#" className="font-medium text-indigo-600 hover:text-indigo-500">
-                Forgot your password?
-              </a>
-            </div>
-          </div>
-
-          <div>
             <button
               type="submit"
               disabled={loading}
-              className={`w-full flex justify-center py-3 px-4 btn-primary ${
-                loading ? 'opacity-50 cursor-not-allowed' : ''
+              className={`w-full py-3 px-4 rounded-xl font-medium text-white transition-all ${
+                loading 
+                  ? 'bg-gray-400 cursor-not-allowed' 
+                  : 'bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 transform hover:scale-[1.02]'
               }`}
             >
-              {loading ? 'Signing in...' : 'Sign in'}
+              {loading ? 'Signing in...' : 'Log in'}
             </button>
-          </div>
+          </form>
 
-          <div className="text-center">
-            <p className="text-sm text-gray-600">
-              Don't have an account?{' '}
-              <Link to="/register" className="font-medium text-indigo-600 hover:text-indigo-500">
-                Register now
-              </Link>
-            </p>
+          <div className="mt-8 text-center">
+            <span className="text-gray-600">Don't have an account? </span>
+            <Link to="/register" className="text-blue-600 hover:text-blue-700 font-medium">
+              Sign up
+            </Link>
           </div>
-        </form>
+        </div>
+
+        {/* Right Side - Image */}
+        <div className="hidden lg:block lg:w-1/2 relative bg-gradient-to-br from-blue-400 to-blue-600">
+          <div className="absolute inset-0 bg-black opacity-60"></div>
+          <div className="relative h-full flex items-center justify-center">
+            <img
+              src="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+              alt="University students"
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 flex flex-col justify-end p-12 bg-gradient-to-t from-black/70 to-transparent">
+              <h2 className="text-4xl font-bold mb-4 text-white drop-shadow-lg">Welcome to UniConnect</h2>
+              <p className="text-xl text-white drop-shadow-md">Connect with your university community and enhance your academic journey.</p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

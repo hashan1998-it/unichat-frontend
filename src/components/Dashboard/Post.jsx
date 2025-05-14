@@ -1,10 +1,14 @@
 // src/components/Dashboard/Post.jsx
 import { useState, useEffect } from 'react';
-import api from '@utils/api';
-import { useAuth } from '@context/AuthContext';
+import api from '../../utils/api';
+import { useAuth } from '../../context/AuthContext';
 import { Link } from 'react-router-dom';
-import socketService from '@utils/socket';
+import socketService from '../../utils/socket';
 import { formatDistanceToNow } from 'date-fns';
+import Avatar from '../common/Avatar';
+import Card from '../common/Card';
+import Dropdown from '../common/Dropdown';
+import Badge from '../common/Badge';
 import { 
   HeartIcon, 
   ChatBubbleLeftIcon,
@@ -18,12 +22,10 @@ const Post = ({ post: initialPost, onUpdate }) => {
   const [post, setPost] = useState(initialPost);
   const [commentText, setCommentText] = useState('');
   const [showComments, setShowComments] = useState(false);
-  const [showMenu, setShowMenu] = useState(false);
   const [imageLoading, setImageLoading] = useState(true);
   const { user } = useAuth();
 
   const isLiked = post.likes.includes(user?._id);
-  const isBookmarked = false; // TODO: Implement bookmarks
 
   // Format time for display
   const formatTime = (date) => {
@@ -31,14 +33,13 @@ const Post = ({ post: initialPost, onUpdate }) => {
   };
 
   useEffect(() => {
-    // Listen for updates to this specific post
+    // Socket listeners setup...
     const postUpdateCleanup = socketService.onPostUpdate((updatedPost) => {
       if (updatedPost._id === post._id) {
         setPost(updatedPost);
       }
     });
     
-    // Listen for new comments
     const commentCleanup = socketService.onNewComment(({ postId, comment }) => {
       if (postId === post._id) {
         setPost(prevPost => ({
@@ -80,27 +81,25 @@ const Post = ({ post: initialPost, onUpdate }) => {
     }
   };
 
+  const menuTrigger = (
+    <button className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+      <EllipsisHorizontalIcon className="h-5 w-5 text-gray-500" />
+    </button>
+  );
+
   return (
-    <article className="bg-white rounded-xl shadow-sm mb-4 overflow-hidden hover:shadow-md transition-shadow duration-300">
+    <Card hoverable className="mb-4 overflow-hidden">
       {/* Post Header */}
       <div className="p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <Link to={`/profile/${post.user._id}`} className="flex-shrink-0">
-              {post.user.profilePicture ? (
-                <img
-                  src={post.user.profilePicture}
-                  alt={`${post.user.username}'s profile`}
-                  className="h-12 w-12 rounded-full object-cover ring-2 ring-gray-100 hover:ring-blue-500 transition-all"
-                />
-              ) : (
-                <div className="h-12 w-12 rounded-full bg-gradient-to-br from-blue-400 to-purple-600 flex items-center justify-center">
-                  <span className="text-white font-medium text-lg">
-                    {post.user.username.charAt(0).toUpperCase()}
-                  </span>
-                </div>
-              )}
-            </Link>
+            <Avatar
+              src={post.user.profilePicture}
+              username={post.user.username}
+              userId={post.user._id}
+              isLink
+              size="medium"
+            />
             <div>
               <Link to={`/profile/${post.user._id}`}>
                 <p className="text-sm font-semibold text-gray-900 hover:text-blue-600 transition-colors">
@@ -112,51 +111,34 @@ const Post = ({ post: initialPost, onUpdate }) => {
                 {post.postType !== 'general' && (
                   <>
                     <span>•</span>
-                    <span className={`capitalize font-medium ${
-                      post.postType === 'academic' ? 'text-blue-600' : 
-                      post.postType === 'event' ? 'text-green-600' : 
-                      'text-gray-600'
-                    }`}>
+                    <Badge 
+                      variant={post.postType === 'academic' ? 'primary' : 'success'}
+                      size="small"
+                    >
                       {post.postType}
-                    </span>
+                    </Badge>
                   </>
                 )}
               </p>
             </div>
           </div>
           
-          <div className="relative">
-            <button
-              onClick={() => setShowMenu(!showMenu)}
-              className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-            >
-              <EllipsisHorizontalIcon className="h-5 w-5 text-gray-500" />
+          <Dropdown trigger={menuTrigger} position="bottom-right">
+            <button className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+              Save post
             </button>
-            {showMenu && (
+            <button className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+              Copy link
+            </button>
+            {user?._id === post.user._id && (
               <>
-                <div
-                  className="fixed inset-0 z-10"
-                  onClick={() => setShowMenu(false)}
-                />
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg z-20 border border-gray-100">
-                  <button className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
-                    Save post
-                  </button>
-                  <button className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
-                    Copy link
-                  </button>
-                  {user?._id === post.user._id && (
-                    <>
-                      <hr className="border-gray-100" />
-                      <button className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50">
-                        Delete post
-                      </button>
-                    </>
-                  )}
-                </div>
+                <hr className="border-gray-100" />
+                <button className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50">
+                  Delete post
+                </button>
               </>
             )}
-          </div>
+          </Dropdown>
         </div>
       </div>
 
@@ -244,19 +226,11 @@ const Post = ({ post: initialPost, onUpdate }) => {
         <div className="px-4 py-3 border-t border-gray-100 bg-gray-50">
           <form onSubmit={handleComment} className="mb-4">
             <div className="flex items-start space-x-3">
-              {user?.profilePicture ? (
-                <img
-                  src={user.profilePicture}
-                  alt={user.username}
-                  className="h-8 w-8 rounded-full object-cover"
-                />
-              ) : (
-                <div className="h-8 w-8 rounded-full bg-gradient-to-br from-blue-400 to-purple-600 flex items-center justify-center">
-                  <span className="text-white text-xs font-medium">
-                    {user?.username?.charAt(0).toUpperCase() || 'U'}
-                  </span>
-                </div>
-              )}
+              <Avatar
+                src={user?.profilePicture}
+                username={user?.username}
+                size="small"
+              />
               <div className="flex-1">
                 <input
                   type="text"
@@ -275,21 +249,13 @@ const Post = ({ post: initialPost, onUpdate }) => {
               .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
               .map((comment) => (
               <div key={comment._id} className="flex space-x-3">
-                <Link to={`/profile/${comment.user?._id}`} className="flex-shrink-0">
-                  {comment.user?.profilePicture ? (
-                    <img
-                      src={comment.user.profilePicture}
-                      alt={comment.user.username}
-                      className="h-8 w-8 rounded-full object-cover"
-                    />
-                  ) : (
-                    <div className="h-8 w-8 rounded-full bg-gray-300 flex items-center justify-center">
-                      <span className="text-gray-700 text-xs font-medium">
-                        {comment.user?.username?.charAt(0).toUpperCase() || 'A'}
-                      </span>
-                    </div>
-                  )}
-                </Link>
+                <Avatar
+                  src={comment.user?.profilePicture}
+                  username={comment.user?.username || 'Anonymous'}
+                  userId={comment.user?._id}
+                  isLink
+                  size="small"
+                />
                 <div className="flex-1">
                   <div className="bg-white p-3 rounded-lg">
                     <Link to={`/profile/${comment.user?._id}`}>
@@ -308,7 +274,7 @@ const Post = ({ post: initialPost, onUpdate }) => {
           </div>
         </div>
       )}
-    </article>
+    </Card>
   );
 };
 

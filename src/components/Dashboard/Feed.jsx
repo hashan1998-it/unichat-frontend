@@ -1,9 +1,13 @@
+// src/components/Dashboard/Feed.jsx
 import { useState, useEffect } from 'react';
-import api from '@utils/api';
-import Post from './Post';
-import socketService from '@utils/socket';
 import { Link } from 'react-router-dom';
-import { PlusCircleIcon } from '@heroicons/react/24/outline';
+import api from '../../utils/api';
+import Post from './Post';
+import socketService from '../../utils/socket';
+import LoadingSpinner from '../common/LoadingSpinner';
+import EmptyState from '../common/EmptyState';
+import Button from '../common/Button';
+import { PlusCircleIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
 
 const Feed = () => {
   const [posts, setPosts] = useState([]);
@@ -43,26 +47,25 @@ const Feed = () => {
     };
   }, []);
 
-  if (loading) return (
-    <div className="text-center py-8">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500 mx-auto"></div>
-      <p className="mt-4 text-gray-500">Loading your feed...</p>
-    </div>
-  );
+  if (loading) return <LoadingSpinner message="Loading your feed..." />;
 
   return (
     <div>
       {posts.length === 0 ? (
-        <div className="text-center py-12 bg-white rounded-lg shadow-sm">
-          <p className="text-gray-500 mb-4">No posts found. Be the first to share!</p>
-          <Link
-            to="/create-post"
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-          >
-            <PlusCircleIcon className="h-5 w-5 mr-2" />
-            Create Post
-          </Link>
-        </div>
+        <EmptyState
+          icon={DocumentTextIcon}
+          title="No posts yet"
+          description="Be the first to share something with the community!"
+          actionButton={
+            <Link to="/create-post">
+              <Button>
+                <PlusCircleIcon className="h-5 w-5 mr-2" />
+                Create Post
+              </Button>
+            </Link>
+          }
+          className="bg-white rounded-lg shadow-sm"
+        />
       ) : (
         posts.map((post) => (
           <Post 

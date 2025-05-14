@@ -2,8 +2,9 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
-import Button from "@components/common/Button";
+import Button from "../common/Button";
+import FormInput from "../common/FormInput";
+import Notification from "../common/Notification";
 
 const Login = () => {
   const [universityId, setUniversityId] = useState("");
@@ -41,20 +42,19 @@ const Login = () => {
     }
   };
 
-  const handleGoogleLogin = () => {
-    console.log("Google login clicked");
-  };
-
-  const handleFacebookLogin = () => {
-    console.log("Facebook login clicked");
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-100 via-blue-50 to-blue-100 flex items-center justify-center p-4">
       {/* Abstract curved shapes */}
       <div className="absolute top-0 left-0 w-96 h-96 bg-blue-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob"></div>
       <div className="absolute top-0 right-0 w-72 h-72 bg-blue-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-2000"></div>
       <div className="absolute bottom-0 left-20 w-72 h-72 bg-blue-300 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-4000"></div>
+      
+      <Notification
+        show={!!error}
+        message={error}
+        type="error"
+        onClose={() => setError("")}
+      />
       
       <div className="max-w-6xl w-full flex bg-white rounded-3xl shadow-2xl overflow-hidden relative z-10">
         {/* Left Side - Form */}
@@ -64,54 +64,28 @@ const Login = () => {
             <p className="text-gray-600">Welcome back! Please enter your details</p>
           </div>
 
-          {error && (
-            <div className="mb-6 p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm">
-              {error}
-            </div>
-          )}
-
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <label htmlFor="universityId" className="block text-sm font-medium text-gray-700 mb-2">
-                University ID
-              </label>
-              <input
-                id="universityId"
-                type="text"
-                required
-                value={universityId}
-                onChange={(e) => setUniversityId(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                placeholder="Enter your university ID"
-              />
-            </div>
+            <FormInput
+              label="University ID"
+              type="text"
+              value={universityId}
+              onChange={(e) => setUniversityId(e.target.value)}
+              placeholder="Enter your university ID"
+              required
+            />
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                Password
-              </label>
-              <div className="relative">
-                <input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all pr-12"
-                  placeholder="Enter your password"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                >
-                  {showPassword ? (
-                    <EyeSlashIcon className="h-5 w-5" />
-                  ) : (
-                    <EyeIcon className="h-5 w-5" />
-                  )}
-                </button>
-              </div>
+              <FormInput
+                label="Password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter your password"
+                required
+                showPasswordToggle
+                showPassword={showPassword}
+                onTogglePassword={() => setShowPassword(!showPassword)}
+              />
               <div className="mt-2 text-right">
                 <a href="#" className="text-sm text-blue-600 hover:text-blue-700">
                   forgot password?

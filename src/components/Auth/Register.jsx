@@ -2,7 +2,13 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { EyeIcon, EyeSlashIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
+import { 
+  Button, 
+  FormInput, 
+  Notification, 
+  Select 
+} from '../common';
+import { CheckCircleIcon } from "@heroicons/react/24/outline";
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -27,6 +33,13 @@ const Register = () => {
       [e.target.name]: e.target.value,
     });
     setError(''); // Clear error when user types
+  };
+
+  const handleRoleChange = (e) => {
+    setFormData({
+      ...formData,
+      role: e.target.value,
+    });
   };
 
   const validatePassword = (password) => {
@@ -66,7 +79,7 @@ const Register = () => {
     setLoading(true);
     try {
       // Register the user
-      const registerResponse = await register(
+      await register(
         formData.username, 
         formData.email, 
         formData.password,
@@ -86,7 +99,6 @@ const Register = () => {
       
     } catch (error) {
       if (error.response) {
-        // Handle specific error messages from the backend
         const errorMessage = error.response.data.message;
         if (errorMessage.includes('Username already exists')) {
           setError('This username is already taken. Please choose another one.');
@@ -107,6 +119,11 @@ const Register = () => {
     }
   };
 
+  const roleOptions = [
+    { value: 'student', label: 'Student' },
+    { value: 'professor', label: 'Professor' }
+  ];
+
   const passwordValidation = validatePassword(formData.password);
 
   return (
@@ -115,6 +132,19 @@ const Register = () => {
       <div className="absolute top-0 left-0 w-96 h-96 bg-blue-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob"></div>
       <div className="absolute top-0 right-0 w-72 h-72 bg-blue-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-2000"></div>
       <div className="absolute bottom-0 left-20 w-72 h-72 bg-blue-300 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-4000"></div>
+      
+      <Notification
+        show={!!error}
+        message={error}
+        type="error"
+        onClose={() => setError("")}
+      />
+      
+      <Notification
+        show={showSuccess}
+        message="Registration successful! Redirecting to profile setup..."
+        type="success"
+      />
       
       <div className="max-w-6xl w-full flex bg-white rounded-3xl shadow-2xl overflow-hidden relative z-10">
         {/* Left Side - Image */}
@@ -140,137 +170,60 @@ const Register = () => {
             <p className="text-sm sm:text-base text-gray-600">Start your university journey with us</p>
           </div>
 
-          {error && (
-            <div className="mb-4 sm:mb-6 p-4 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm">
-              <div className="flex items-center">
-                <svg className="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <span>{error}</span>
-              </div>
-            </div>
-          )}
-
-          {showSuccess && (
-            <div className="mb-4 sm:mb-6 p-4 bg-green-50 border border-green-200 rounded-lg flex items-center space-x-3">
-              <CheckCircleIcon className="h-5 w-5 sm:h-6 sm:w-6 text-green-600" />
-              <div>
-                <p className="text-green-700 font-medium">Registration successful!</p>
-                <p className="text-green-600 text-sm">Redirecting to profile setup...</p>
-              </div>
-            </div>
-          )}
-
           <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
             {/* Role Selection */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1 sm:mb-2">
-                I am a
-              </label>
-              <div className="grid grid-cols-2 gap-2 sm:gap-4">
-                <button
-                  type="button"
-                  onClick={() => setFormData({ ...formData, role: 'student' })}
-                  className={`p-3 sm:p-4 rounded-xl border-2 transition-all ${
-                    formData.role === 'student'
-                      ? 'border-blue-500 bg-blue-50 text-blue-700'
-                      : 'border-gray-300 hover:border-gray-400'
-                  }`}
-                >
-                  <div className="text-base sm:text-lg font-semibold">Student</div>
-                  <div className="text-xs sm:text-sm text-gray-500">Join as a student</div>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setFormData({ ...formData, role: 'professor' })}
-                  className={`p-3 sm:p-4 rounded-xl border-2 transition-all ${
-                    formData.role === 'professor'
-                      ? 'border-blue-500 bg-blue-50 text-blue-700'
-                      : 'border-gray-300 hover:border-gray-400'
-                  }`}
-                >
-                  <div className="text-base sm:text-lg font-semibold">Professor</div>
-                  <div className="text-xs sm:text-sm text-gray-500">Join as a professor</div>
-                </button>
-              </div>
-            </div>
+            <Select
+              label="I am a"
+              value={formData.role}
+              onChange={handleRoleChange}
+              options={roleOptions}
+              className="mb-4"
+            />
+
+            <FormInput
+              label="Username"
+              name="username"
+              type="text"
+              value={formData.username}
+              onChange={handleChange}
+              placeholder="Choose a username"
+              required
+            />
+
+            <FormInput
+              label="Email"
+              name="email"
+              type="email"
+              value={formData.email}
+              onChange={handleChange}
+              placeholder="Enter your university email"
+              required
+            />
+
+            <FormInput
+              label="University Registration ID"
+              name="universityId"
+              type="text"
+              value={formData.universityId}
+              onChange={handleChange}
+              placeholder="Enter your university ID (e.g., CS123456)"
+              helpText="Format: 2-3 letters followed by 6-8 numbers"
+              required
+            />
 
             <div>
-              <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1 sm:mb-2">
-                Username
-              </label>
-              <input
-                id="username"
-                name="username"
-                type="text"
-                required
-                value={formData.username}
+              <FormInput
+                label="Password"
+                name="password"
+                type="password"
+                value={formData.password}
                 onChange={handleChange}
-                className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                placeholder="Choose a username"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1 sm:mb-2">
-                Email
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
+                placeholder="Create a password"
                 required
-                value={formData.email}
-                onChange={handleChange}
-                className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                placeholder="Enter your university email"
+                showPasswordToggle
+                showPassword={showPassword}
+                onTogglePassword={() => setShowPassword(!showPassword)}
               />
-            </div>
-
-            <div>
-              <label htmlFor="universityId" className="block text-sm font-medium text-gray-700 mb-1 sm:mb-2">
-                University Registration ID
-              </label>
-              <input
-                id="universityId"
-                name="universityId"
-                type="text"
-                required
-                value={formData.universityId}
-                onChange={handleChange}
-                className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                placeholder="Enter your university ID (e.g., CS123456)"
-              />
-              <p className="mt-1 text-xs text-gray-500">Format: 2-3 letters followed by 6-8 numbers</p>
-            </div>
-
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1 sm:mb-2">
-                Password
-              </label>
-              <div className="relative">
-                <input
-                  id="password"
-                  name="password"
-                  type={showPassword ? "text" : "password"}
-                  required
-                  value={formData.password}
-                  onChange={handleChange}
-                  className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all pr-12"
-                  placeholder="Create a password"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                >
-                  {showPassword ? (
-                    <EyeSlashIcon className="h-5 w-5" />
-                  ) : (
-                    <EyeIcon className="h-5 w-5" />
-                  )}
-                </button>
-              </div>
               <div className="mt-2">
                 <p className="text-xs text-gray-500">Password must:</p>
                 <ul className="text-xs text-gray-500 list-disc list-inside">
@@ -281,46 +234,26 @@ const Register = () => {
               </div>
             </div>
 
-            <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1 sm:mb-2">
-                Confirm Password
-              </label>
-              <div className="relative">
-                <input
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  type={showConfirmPassword ? "text" : "password"}
-                  required
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all pr-12"
-                  placeholder="Confirm your password"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                >
-                  {showConfirmPassword ? (
-                    <EyeSlashIcon className="h-5 w-5" />
-                  ) : (
-                    <EyeIcon className="h-5 w-5" />
-                  )}
-                </button>
-              </div>
-            </div>
+            <FormInput
+              label="Confirm Password"
+              name="confirmPassword"
+              type="password"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              placeholder="Confirm your password"
+              required
+              showPasswordToggle
+              showPassword={showConfirmPassword}
+              onTogglePassword={() => setShowConfirmPassword(!showConfirmPassword)}
+            />
 
-            <button
+            <Button
               type="submit"
+              fullWidth
               disabled={loading}
-              className={`w-full py-3 px-4 rounded-xl font-medium text-white transition-all ${
-                loading 
-                  ? 'bg-gray-400 cursor-not-allowed' 
-                  : 'bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 transform hover:scale-[1.02]'
-              }`}
             >
               {loading ? 'Creating account...' : 'Create account'}
-            </button>
+            </Button>
           </form>
 
           <div className="mt-8 text-center">

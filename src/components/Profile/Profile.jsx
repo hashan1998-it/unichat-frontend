@@ -1,11 +1,16 @@
+// src/components/Profile/Profile.jsx
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import api from '@utils/api';
-import { useAuth } from '@context/AuthContext';
-import Post from '@components/Dashboard/Post';
-import ConnectionRequests from '@components/Connections/ConnectionRequests';
-import ConnectionsList from '@components/Connections/ConnectionsList';
-import Button from '@components/common/Button';
+import api from '../../utils/api';
+import { useAuth } from '../../context/AuthContext';
+import Post from '../Dashboard/Post';
+import ConnectionRequests from '../Connections/ConnectionRequests';
+import ConnectionsList from '../Connections/ConnectionsList';
+import Button from '../common/Button';
+import Card from '../common/Card';
+import Avatar from '../common/Avatar';
+import LoadingSpinner from '../common/LoadingSpinner';
+import Badge from '../common/Badge';
 
 const Profile = () => {
   const { id } = useParams();
@@ -60,7 +65,7 @@ const Profile = () => {
     }
   };
 
-  if (!user) return <div className="text-center py-4">Loading...</div>;
+  if (!user) return <LoadingSpinner message="Loading profile..." />;
 
   const isFollowing = user.followers.some(
     (follower) => follower._id === currentUser?._id
@@ -70,25 +75,25 @@ const Profile = () => {
     <div className="space-y-6">
       <h1 className="text-2xl font-bold text-gray-900">Profile</h1>
       
-      <div className="bg-white shadow rounded-lg p-6 mb-6">
+      <Card>
         <div className="flex items-center space-x-6 mb-4">
           <div className="flex-shrink-0">
-            {user.profilePicture ? (
-              <img
-                src={user.profilePicture}
-                alt={`${user.username}'s profile`}
-                className="w-24 h-24 rounded-full object-cover border-4 border-blue-100"
-              />
-            ) : (
-              <div className="w-24 h-24 rounded-full bg-gray-100 flex items-center justify-center border-4 border-blue-100">
-                <span className="text-3xl font-semibold text-gray-400">
-                  {user.username.charAt(0).toUpperCase()}
-                </span>
-              </div>
-            )}
+            <Avatar
+              src={user.profilePicture}
+              username={user.username}
+              size="large"
+              showBorder
+            />
           </div>
           <div className="flex-1">
-            <h2 className="text-xl font-semibold text-gray-800">{user.username}</h2>
+            <div className="flex items-center space-x-3">
+              <h2 className="text-xl font-semibold text-gray-800">{user.username}</h2>
+              {user.role && (
+                <Badge variant={`role.${user.role}`} icon={user.role === 'professor' ? null : null}>
+                  {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+                </Badge>
+              )}
+            </div>
             
             {editMode ? (
               <div className="mt-2">
@@ -99,19 +104,11 @@ const Profile = () => {
                   className="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border border-gray-300 rounded-md"
                   rows="3"
                 />
-                <div className="mt-2">
-                  <button 
-                    onClick={handleSaveProfile}
-                    className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                  >
-                    Save
-                  </button>
-                  <button 
-                    onClick={() => setEditMode(false)}
-                    className="ml-3 inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                  >
+                <div className="mt-2 space-x-3">
+                  <Button onClick={handleSaveProfile}>Save</Button>
+                  <Button onClick={() => setEditMode(false)} variant="secondary">
                     Cancel
-                  </button>
+                  </Button>
                 </div>
               </div>
             ) : (
@@ -128,10 +125,7 @@ const Profile = () => {
                 </Button>
               )}
               {isOwnProfile && (
-                <Button
-                  variant="primary"
-                  onClick={() => setEditMode(true)}
-                >
+                <Button onClick={() => setEditMode(true)}>
                   Edit Profile
                 </Button>
               )}
@@ -153,20 +147,20 @@ const Profile = () => {
             <div className="text-gray-600">Following</div>
           </div>
         </div>
-      </div>
+      </Card>
 
       {/* Connection Requests Section - Only show on own profile */}
       {isOwnProfile && (
-        <div className="bg-white shadow rounded-lg p-6">
+        <Card>
           <h2 className="text-xl font-semibold text-gray-800 mb-4">Connection Requests</h2>
           <ConnectionRequests />
-        </div>
+        </Card>
       )}
 
       {/* Connections List */}
-      <div className="bg-white shadow rounded-lg p-6">
+      <Card>
         <ConnectionsList userId={userId} />
-      </div>
+      </Card>
 
       {/* Posts Section */}
       <div className="space-y-4">

@@ -1,9 +1,14 @@
+// src/components/Connections/ConnectionRequests.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import api from '@utils/api';
-import { Avatar, Typography, Box, CircularProgress } from '@mui/material';
-import { Check, Close } from '@mui/icons-material';
-import Button from '@components/common/Button';
+import api from '../../utils/api';
+import Avatar from '../common/Avatar';
+import Button from '../common/Button';
+import Card from '../common/Card';
+import LoadingSpinner from '../common/LoadingSpinner';
+import EmptyState from '../common/EmptyState';
+import Notification from '../common/Notification';
+import { Check, Close} from '@mui/icons-material';
 
 const ConnectionRequests = () => {
   const [requests, setRequests] = useState([]);
@@ -14,15 +19,6 @@ const ConnectionRequests = () => {
   useEffect(() => {
     loadRequests();
   }, []);
-
-  useEffect(() => {
-    if (notification.show) {
-      const timer = setTimeout(() => {
-        setNotification({ show: false, message: '', type: '' });
-      }, 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [notification]);
 
   const loadRequests = async () => {
     try {
@@ -87,76 +83,57 @@ const ConnectionRequests = () => {
   };
 
   if (loading) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
-        <CircularProgress />
-      </Box>
-    );
+    return <LoadingSpinner message="Loading connection requests..." />;
   }
 
   if (!requests || requests.length === 0) {
     return (
-      <Box sx={{ p: 2, textAlign: 'center' }}>
-        <Typography variant="h6" color="text.secondary">
-          No pending connection requests
-        </Typography>
-      </Box>
+      <EmptyState
+        icon={UserGroupIcon}
+        title="No pending requests"
+        description="You don't have any pending connection requests"
+      />
     );
   }
 
   return (
-    <Box sx={{ p: 2 }}>
-      {notification.show && (
-        <Box
-          sx={{
-            position: 'fixed',
-            top: 20,
-            right: 20,
-            backgroundColor: notification.type === 'success' ? '#4caf50' : '#f44336',
-            color: 'white',
-            padding: '10px 20px',
-            borderRadius: '4px',
-            zIndex: 1000,
-            boxShadow: '0 2px 5px rgba(0,0,0,0.2)'
-          }}
-        >
-          {notification.message}
-        </Box>
-      )}
+    <div className="space-y-4">
+      <Notification
+        show={notification.show}
+        message={notification.message}
+        type={notification.type}
+        onClose={() => setNotification({ show: false, message: '', type: '' })}
+      />
+      
       {requests.map(request => {
         if (!request || !request.sender) return null;
         const sender = request.sender;
         const displayName = sender.username || 'Unknown User';
-        const initial = displayName.charAt(0).toUpperCase();
         
         return (
-          <Box 
-            key={request._id} 
-            className="bg-white rounded-lg shadow p-4 mb-4"
-          >
-            <Box className="flex items-center justify-between">
-              <Box className="flex items-center gap-4">
+          <Card key={request._id} hoverable padding="p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
                 <Avatar
                   src={sender.profilePicture}
-                  alt={displayName}
-                  sx={{ width: 40, height: 40 }}
-                >
-                  {initial}
-                </Avatar>
-                <Box>
-                  <Typography 
-                    variant="subtitle1" 
-                    className="cursor-pointer hover:underline"
+                  username={displayName}
+                  size="medium"
+                  userId={sender._id}
+                  isLink
+                />
+                <div>
+                  <h3 
+                    className="font-medium text-gray-900 cursor-pointer hover:text-blue-600"
                     onClick={() => handleViewProfile(sender._id)}
                   >
                     {displayName}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
+                  </h3>
+                  <p className="text-sm text-gray-500">
                     {sender.universityId || 'No University ID'}
-                  </Typography>
-                </Box>
-              </Box>
-              <Box className="flex gap-2">
+                  </p>
+                </div>
+              </div>
+              <div className="flex gap-2">
                 <Button
                   variant="success"
                   size="small"
@@ -173,13 +150,13 @@ const ConnectionRequests = () => {
                   <Close className="mr-1" />
                   Reject
                 </Button>
-              </Box>
-            </Box>
-          </Box>
+              </div>
+            </div>
+          </Card>
         );
       })}
-    </Box>
+    </div>
   );
 };
 
-export default ConnectionRequests; 
+export default ConnectionRequests;

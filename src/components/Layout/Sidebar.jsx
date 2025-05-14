@@ -1,6 +1,9 @@
 // src/components/Layout/Sidebar.jsx
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
+import Avatar from '../common/Avatar';
+import Button from '../common/Button';
 import {
   HomeIcon,
   MagnifyingGlassIcon,
@@ -25,7 +28,6 @@ import {
   CalendarIcon as CalendarSolid,
   BookOpenIcon as BookOpenSolid
 } from '@heroicons/react/24/solid';
-import { useAuth } from '../../context/AuthContext';
 
 const Sidebar = () => {
   const location = useLocation();
@@ -47,15 +49,12 @@ const Sidebar = () => {
   ];
 
   const isActive = (path) => {
-    // Handle exact matches for most routes
     if (path === '/dashboard' && location.pathname === '/dashboard') {
       return true;
     }
-    // For profile routes, check if the pathname starts with /profile
     if (path === '/profile' && location.pathname.startsWith('/profile')) {
       return true;
     }
-    // For other routes, exact match
     return location.pathname === path;
   };
 
@@ -117,14 +116,14 @@ const Sidebar = () => {
           })}
 
           {/* Create Post Button */}
-          <Link
-            to="/create-post"
-            onClick={() => setIsOpen(false)}
-            className="flex items-center px-3 py-2 mt-4 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors"
-          >
-            <PlusCircleIcon className="h-5 w-5 mr-3" />
-            Create Post
-          </Link>
+          <div className="mt-4">
+            <Link to="/create-post" onClick={() => setIsOpen(false)}>
+              <Button fullWidth className="flex items-center justify-center">
+                <PlusCircleIcon className="h-5 w-5 mr-2" />
+                Create Post
+              </Button>
+            </Link>
+          </div>
         </nav>
 
         {/* User Section */}
@@ -166,21 +165,11 @@ const Sidebar = () => {
           {/* User Info */}
           <div className="p-4 border-t border-gray-200">
             <div className="flex items-center">
-              <div className="flex-shrink-0">
-                {user?.profilePicture ? (
-                  <img
-                    src={user.profilePicture}
-                    alt={`${user.username}'s profile`}
-                    className="h-10 w-10 rounded-full object-cover"
-                  />
-                ) : (
-                  <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
-                    <span className="text-gray-700 font-medium">
-                      {user?.username?.charAt(0).toUpperCase() || 'U'}
-                    </span>
-                  </div>
-                )}
-              </div>
+              <Avatar
+                src={user?.profilePicture}
+                username={user?.username}
+                size="medium"
+              />
               <div className="ml-3">
                 <p className="text-sm font-medium text-gray-900">{user?.username}</p>
                 <p className="text-xs text-gray-500">{user?.email}</p>

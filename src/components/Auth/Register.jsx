@@ -77,7 +77,7 @@ const Register = () => {
       setShowSuccess(true);
       
       // Automatically log in after registration
-      await login(formData.email, formData.password);
+      await login(formData.universityId, formData.password);
       
       // Navigate to profile picture section after 2 seconds
       setTimeout(() => {
@@ -85,7 +85,23 @@ const Register = () => {
       }, 2000);
       
     } catch (error) {
-      setError(error.response?.data?.message || 'Failed to register');
+      if (error.response) {
+        // Handle specific error messages from the backend
+        const errorMessage = error.response.data.message;
+        if (errorMessage.includes('Username already exists')) {
+          setError('This username is already taken. Please choose another one.');
+        } else if (errorMessage.includes('Email already exists')) {
+          setError('This email is already registered. Please use a different email.');
+        } else if (errorMessage.includes('University ID already exists')) {
+          setError('This University ID is already registered. Please check your ID or contact support.');
+        } else {
+          setError(errorMessage || 'Failed to register. Please try again.');
+        }
+      } else if (error.request) {
+        setError('Unable to connect to server. Please check your internet connection.');
+      } else {
+        setError('An unexpected error occurred. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
@@ -125,8 +141,13 @@ const Register = () => {
           </div>
 
           {error && (
-            <div className="mb-4 sm:mb-6 p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm">
-              {error}
+            <div className="mb-4 sm:mb-6 p-4 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm">
+              <div className="flex items-center">
+                <svg className="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>{error}</span>
+              </div>
             </div>
           )}
 
@@ -218,8 +239,9 @@ const Register = () => {
                 value={formData.universityId}
                 onChange={handleChange}
                 className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                placeholder="Enter your university ID"
+                placeholder="Enter your university ID (e.g., CS123456)"
               />
+              <p className="mt-1 text-xs text-gray-500">Format: 2-3 letters followed by 6-8 numbers</p>
             </div>
 
             <div>
@@ -249,19 +271,14 @@ const Register = () => {
                   )}
                 </button>
               </div>
-              {formData.password && (
-                <div className="mt-1 sm:mt-2 space-y-0.5 sm:space-y-1">
-                  <div className={`text-xs ${passwordValidation.minLength ? 'text-green-600' : 'text-gray-400'}`}>
-                    ✓ At least 8 characters
-                  </div>
-                  <div className={`text-xs ${passwordValidation.hasNumber ? 'text-green-600' : 'text-gray-400'}`}>
-                    ✓ Contains numbers
-                  </div>
-                  <div className={`text-xs ${passwordValidation.hasSymbol ? 'text-green-600' : 'text-gray-400'}`}>
-                    ✓ Contains symbols
-                  </div>
-                </div>
-              )}
+              <div className="mt-2">
+                <p className="text-xs text-gray-500">Password must:</p>
+                <ul className="text-xs text-gray-500 list-disc list-inside">
+                  <li className={formData.password.length >= 8 ? 'text-green-600' : ''}>Be at least 8 characters long</li>
+                  <li className={/\d/.test(formData.password) ? 'text-green-600' : ''}>Contain at least one number</li>
+                  <li className={/[!@#$%^&*(),.?":{}|<>]/.test(formData.password) ? 'text-green-600' : ''}>Contain at least one special character</li>
+                </ul>
+              </div>
             </div>
 
             <div>
@@ -296,18 +313,18 @@ const Register = () => {
             <button
               type="submit"
               disabled={loading}
-              className={`w-full py-2 sm:py-3 px-4 rounded-xl font-medium text-white transition-all ${
+              className={`w-full py-3 px-4 rounded-xl font-medium text-white transition-all ${
                 loading 
                   ? 'bg-gray-400 cursor-not-allowed' 
                   : 'bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 transform hover:scale-[1.02]'
               }`}
             >
-              {loading ? 'Creating account...' : 'Sign up'}
+              {loading ? 'Creating account...' : 'Create account'}
             </button>
           </form>
 
-          <div className="mt-4 sm:mt-6 text-center">
-            <span className="text-sm sm:text-base text-gray-600">Already have an account? </span>
+          <div className="mt-8 text-center">
+            <span className="text-gray-600">Already have an account? </span>
             <Link to="/" className="text-blue-600 hover:text-blue-700 font-medium">
               Log in
             </Link>

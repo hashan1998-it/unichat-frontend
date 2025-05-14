@@ -3,9 +3,10 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
+import Button from "@components/common/Button";
 
 const Login = () => {
-  const [email, setEmail] = useState("");
+  const [universityId, setUniversityId] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
@@ -18,14 +19,14 @@ const Login = () => {
     setError("");
     setLoading(true);
     
-    if (!email || !password) {
+    if (!universityId || !password) {
       setError("Please fill in all fields");
       setLoading(false);
       return;
     }
     
     try {
-      await login(email, password);
+      await login(universityId, password);
       navigate("/dashboard");
     } catch (error) {
       if (error.response) {
@@ -71,17 +72,17 @@ const Login = () => {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                Email
+              <label htmlFor="universityId" className="block text-sm font-medium text-gray-700 mb-2">
+                University ID
               </label>
               <input
-                id="email"
-                type="email"
+                id="universityId"
+                type="text"
                 required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={universityId}
+                onChange={(e) => setUniversityId(e.target.value)}
                 className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                placeholder="Enter your email"
+                placeholder="Enter your university ID"
               />
             </div>
 
@@ -118,17 +119,14 @@ const Login = () => {
               </div>
             </div>
 
-            <button
+            <Button
               type="submit"
+              variant="primary"
+              fullWidth
               disabled={loading}
-              className={`w-full py-3 px-4 rounded-xl font-medium text-white transition-all ${
-                loading 
-                  ? 'bg-gray-400 cursor-not-allowed' 
-                  : 'bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 transform hover:scale-[1.02]'
-              }`}
             >
               {loading ? 'Signing in...' : 'Log in'}
-            </button>
+            </Button>
           </form>
 
           <div className="mt-8 text-center">

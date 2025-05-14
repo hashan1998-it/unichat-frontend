@@ -1,8 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import api from '../../utils/api';
-import { useAuth } from '../../context/AuthContext';
-import Post from '../Dashboard/Post';
+import api from '@utils/api';
+import { useAuth } from '@context/AuthContext';
+import Post from '@components/Dashboard/Post';
+import ConnectionRequests from '@components/Connections/ConnectionRequests';
+import ConnectionsList from '@components/Connections/ConnectionsList';
+import Button from '@components/common/Button';
 
 const Profile = () => {
   const { id } = useParams();
@@ -64,8 +67,8 @@ const Profile = () => {
   );
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Profile</h1>
+    <div className="space-y-6">
+      <h1 className="text-2xl font-bold text-gray-900">Profile</h1>
       
       <div className="bg-white shadow rounded-lg p-6 mb-6">
         <div className="flex items-center space-x-6 mb-4">
@@ -117,24 +120,20 @@ const Profile = () => {
             
             <div className="mt-4">
               {!isOwnProfile && (
-                <button 
+                <Button
+                  variant={isFollowing ? 'danger' : 'primary'}
                   onClick={handleFollow}
-                  className={`inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white ${
-                    isFollowing 
-                      ? 'bg-red-600 hover:bg-red-700 focus:ring-red-500' 
-                      : 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500'
-                  } focus:outline-none focus:ring-2 focus:ring-offset-2`}
                 >
                   {isFollowing ? 'Unfollow' : 'Follow'}
-                </button>
+                </Button>
               )}
               {isOwnProfile && (
-                <button 
+                <Button
+                  variant="primary"
                   onClick={() => setEditMode(true)}
-                  className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 >
                   Edit Profile
-                </button>
+                </Button>
               )}
             </div>
           </div>
@@ -156,7 +155,21 @@ const Profile = () => {
         </div>
       </div>
 
-      <div>
+      {/* Connection Requests Section - Only show on own profile */}
+      {isOwnProfile && (
+        <div className="bg-white shadow rounded-lg p-6">
+          <h2 className="text-xl font-semibold text-gray-800 mb-4">Connection Requests</h2>
+          <ConnectionRequests />
+        </div>
+      )}
+
+      {/* Connections List */}
+      <div className="bg-white shadow rounded-lg p-6">
+        <ConnectionsList userId={userId} />
+      </div>
+
+      {/* Posts Section */}
+      <div className="space-y-4">
         {posts.map((post) => (
           <Post 
             key={post._id} 

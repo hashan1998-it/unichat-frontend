@@ -1,4 +1,3 @@
-// App.jsx
 import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -6,6 +5,7 @@ import Header from './components/Layout/Header';
 import Sidebar from './components/Layout/Sidebar';
 import Login from './components/Auth/Login';
 import Register from './components/Auth/Register';
+import ProfileSetup from './components/Auth/ProfileSetup';
 import Feed from './components/Dashboard/Feed';
 import CreatePost from './components/Posts/CreatePost';
 import Profile from './components/Profile/Profile';
@@ -30,7 +30,7 @@ const AuthenticatedLayout = () => {
     <div className="min-h-screen bg-gray-50">
       <Sidebar />
       <Header />
-      <div className="ml-64 pt-16">
+      <div className="lg:ml-64 pt-16">
         <Outlet />
       </div>
     </div>
@@ -41,8 +41,8 @@ const Dashboard = () => {
   const [feedKey, setFeedKey] = useState(0);
   
   return (
-    <div className="max-w-3xl mx-auto py-6 px-4">
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Home</h1>
+    <div className="max-w-6xl mx-auto py-4 px-3 sm:px-4">
+      <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">Home</h1>
       <Feed key={feedKey} />
     </div>
   );
@@ -62,48 +62,49 @@ const AppContent = () => {
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/setup-profile" element={<PrivateRoute><ProfileSetup /></PrivateRoute>} />
         
         {/* Protected routes with layout */}
         <Route element={<PrivateRoute><AuthenticatedLayout /></PrivateRoute>}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/create-post" element={<CreatePost />} />
           <Route path="/profile/:id?" element={
-            <div className="max-w-3xl mx-auto py-6 px-4">
+            <div className="max-w-6xl mx-auto py-4 px-3 sm:px-4">
               <Profile />
             </div>
           } />
           <Route path="/explore" element={
-            <div className="max-w-3xl mx-auto py-6 px-4">
+            <div className="max-w-6xl mx-auto py-4 px-3 sm:px-4">
               <Explore/>
             </div>
           } />
           <Route path="/research" element={
-            <div className="max-w-3xl mx-auto py-6 px-4">
-              <h1 className="text-2xl font-bold text-gray-900 mb-6">Research</h1>
+            <div className="max-w-6xl mx-auto py-4 px-3 sm:px-4">
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">Research</h1>
               <p className="text-gray-600">Academic research and papers</p>
             </div>
           } />
           <Route path="/events" element={
-            <div className="max-w-3xl mx-auto py-6 px-4">
-              <h1 className="text-2xl font-bold text-gray-900 mb-6">Events</h1>
+            <div className="max-w-6xl mx-auto py-4 px-3 sm:px-4">
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">Events</h1>
               <p className="text-gray-600">University events and activities</p>
             </div>
           } />
           <Route path="/groups" element={
-            <div className="max-w-3xl mx-auto py-6 px-4">
-              <h1 className="text-2xl font-bold text-gray-900 mb-6">Groups</h1>
+            <div className="max-w-6xl mx-auto py-4 px-3 sm:px-4">
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">Groups</h1>
               <p className="text-gray-600">Join study groups and communities</p>
             </div>
           } />
           <Route path="/courses" element={
-            <div className="max-w-3xl mx-auto py-6 px-4">
-              <h1 className="text-2xl font-bold text-gray-900 mb-6">Courses</h1>
+            <div className="max-w-6xl mx-auto py-4 px-3 sm:px-4">
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">Courses</h1>
               <p className="text-gray-600">Your enrolled courses</p>
             </div>
           } />
           <Route path="/settings" element={
-            <div className="max-w-3xl mx-auto py-6 px-4">
-              <h1 className="text-2xl font-bold text-gray-900 mb-6">Settings</h1>
+            <div className="max-w-6xl mx-auto py-4 px-3 sm:px-4">
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">Settings</h1>
               <p className="text-gray-600">Manage your account settings</p>
             </div>
           } />

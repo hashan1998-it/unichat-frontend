@@ -1,5 +1,5 @@
-import { createContext, useState, useContext, useEffect } from 'react';
-import api from '../utils/api';
+import { createContext, useState, useContext, useEffect } from "react";
+import api from "../utils/api";
 
 const AuthContext = createContext();
 
@@ -8,9 +8,9 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    const userId = localStorage.getItem('userId');
-    
+    const token = localStorage.getItem("token");
+    const userId = localStorage.getItem("userId");
+
     if (token && userId) {
       loadUser(userId);
     } else {
@@ -31,12 +31,12 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      const response = await api.post('/auth/login', { email, password });
+      const response = await api.post("/auth/login", { email, password });
       const { token, userId } = response.data;
-      
-      localStorage.setItem('token', token);
-      localStorage.setItem('userId', userId);
-      
+
+      localStorage.setItem("token", token);
+      localStorage.setItem("userId", userId);
+
       await loadUser(userId);
       return response.data;
     } catch (error) {
@@ -44,14 +44,20 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const register = async (username, email, password) => {
-    const response = await api.post('/auth/register', { username, email, password });
+  const register = async (username, email, password, role, universityId) => {
+    const response = await api.post("/auth/register", {
+      username,
+      email,
+      password,
+      role,
+      universityId,
+    });
     return response.data;
   };
 
   const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('userId');
+    localStorage.removeItem("token");
+    localStorage.removeItem("userId");
     setUser(null);
   };
 

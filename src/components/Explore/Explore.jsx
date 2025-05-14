@@ -88,6 +88,9 @@ const Explore = () => {
     try {
       const response = await api.post(`/users/${isFollowing ? 'unfollow' : 'follow'}/${userId}`);
       
+      // Create a simple user object with only the _id (which is what we need for comparison)
+      const simpleCurrentUser = { _id: currentUser._id };
+      
       // Update the users state with the new data
       setUsers(prevUsers => 
         prevUsers.map(user => {
@@ -97,7 +100,7 @@ const Explore = () => {
               ...user,
               followers: isFollowing 
                 ? currentFollowers.filter(f => f._id !== currentUser._id)
-                : [...currentFollowers, currentUser]
+                : [...currentFollowers, simpleCurrentUser]
             };
           }
           return user;
@@ -113,7 +116,7 @@ const Explore = () => {
               ...user,
               followers: isFollowing 
                 ? currentFollowers.filter(f => f._id !== currentUser._id)
-                : [...currentFollowers, currentUser]
+                : [...currentFollowers, simpleCurrentUser]
             };
           }
           return user;

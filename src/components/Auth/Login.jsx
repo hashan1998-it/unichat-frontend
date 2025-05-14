@@ -149,7 +149,7 @@ const Login = () => {
               className="w-full h-full object-cover"
             />
             <div className="absolute inset-0 flex flex-col justify-end p-12 bg-gradient-to-t from-black/70 to-transparent">
-              <h2 className="text-4xl font-bold mb-4 text-white drop-shadow-lg">Welcome to UniConnect</h2>
+              <h2 className="text-4xl font-bold mb-4 text-white drop-shadow-lg">Welcome to UniChat</h2>
               <p className="text-xl text-white drop-shadow-md">Connect with your university community and enhance your academic journey.</p>
             </div>
           </div>

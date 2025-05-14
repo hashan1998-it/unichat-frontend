@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import api from '../../utils/api';
 import Post from './Post';
 import socket, { onNewPost, onPostUpdate } from '../../utils/socket';
+import { Link } from 'react-router-dom';
+import { PlusCircleIcon } from '@heroicons/react/24/outline';
 
 const Feed = () => {
   const [posts, setPosts] = useState([]);
@@ -52,7 +54,14 @@ const Feed = () => {
     <div>
       {posts.length === 0 ? (
         <div className="text-center py-12 bg-white rounded-lg shadow-sm">
-          <p className="text-gray-500">No posts found. Be the first to share!</p>
+          <p className="text-gray-500 mb-4">No posts found. Be the first to share!</p>
+          <Link
+            to="/create-post"
+            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          >
+            <PlusCircleIcon className="h-5 w-5 mr-2" />
+            Create Post
+          </Link>
         </div>
       ) : (
         posts.map((post) => (

@@ -89,7 +89,6 @@ const ConnectionRequests = () => {
   if (!requests || requests.length === 0) {
     return (
       <EmptyState
-        icon={UserGroupIcon}
         title="No pending requests"
         description="You don't have any pending connection requests"
       />

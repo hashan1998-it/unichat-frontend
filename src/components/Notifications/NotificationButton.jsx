@@ -12,13 +12,22 @@ const NotificationButton = () => {
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const processedNotificationIds = useRef(new Set());
 
   const fetchNotifications = async () => {
     try {
       setLoading(true);
       setError(null);
       const response = await api.get('/notifications');
-      setNotifications(response.data || []);
+      const notificationsData = response.data || [];
+      setNotifications(notificationsData);
+      // Track processed notification IDs
+      notificationsData.forEach(notif => {
+        processedNotificationIds.current.add(notif._id);
+      });
+      // Update unread count based on actual notifications
+      const unreadNotifications = notificationsData.filter(n => !n.read);
+      setUnreadCount(unreadNotifications.length);
     } catch (error) {
       if (error.response?.status === 404) {
         setNotifications([]);
@@ -34,40 +43,67 @@ const NotificationButton = () => {
   const fetchUnreadCount = async () => {
     try {
       const response = await api.get('/notifications/unread/count');
-      setUnreadCount(response.data.count);
+      setUnreadCount(response.data.count || 0);
     } catch (error) {
       console.error('Error fetching unread count:', error);
       if (error.response?.status === 404) {
-        // If endpoint doesn't exist, default to 0
         setUnreadCount(0);
       }
     }
   };
 
   useEffect(() => {
+    // Initial fetch
     fetchNotifications();
     fetchUnreadCount();
 
     // Set up socket listener for real-time notifications
     const cleanup = socketService.onNotification((notification) => {
-      setNotifications(prev => [notification, ...prev]);
-      setUnreadCount(prev => prev + 1);
+      // Check if we've already processed this notification
+      if (processedNotificationIds.current.has(notification._id)) {
+        console.log('Ignoring duplicate notification:', notification._id);
+        return;
+      }
+
+      // Add to processed set
+      processedNotificationIds.current.add(notification._id);
+
+      // Add to notifications array
+      setNotifications(prev => {
+        // Double-check that this notification isn't already in the array
+        if (prev.some(n => n._id === notification._id)) {
+          console.log('Notification already in state:', notification._id);
+          return prev;
+        }
+        return [notification, ...prev];
+      });
+      
+      // Increment unread count if the notification is unread
+      if (!notification.read) {
+        setUnreadCount(prev => prev + 1);
+      }
     });
 
     return () => {
       cleanup();
+      // Clear processed IDs on unmount
+      processedNotificationIds.current.clear();
     };
   }, []);
 
   const handleMarkAsRead = async (notificationId) => {
     try {
       await api.put(`/notifications/${notificationId}/read`);
-      setNotifications(notifications.map(notification =>
+      setNotifications(prev => prev.map(notification =>
         notification._id === notificationId
           ? { ...notification, read: true }
           : notification
       ));
-      setUnreadCount(prev => Math.max(0, prev - 1));
+      // Decrease unread count
+      const notification = notifications.find(n => n._id === notificationId);
+      if (notification && !notification.read) {
+        setUnreadCount(prev => Math.max(0, prev - 1));
+      }
     } catch (error) {
       console.error('Error marking notification as read:', error);
     }
@@ -76,7 +112,7 @@ const NotificationButton = () => {
   const handleMarkAllAsRead = async () => {
     try {
       await api.put('/notifications/read/all');
-      setNotifications(notifications.map(notification => ({
+      setNotifications(prev => prev.map(notification => ({
         ...notification,
         read: true
       })));
@@ -106,7 +142,7 @@ const NotificationButton = () => {
       <BellIcon className="h-6 w-6" />
       {unreadCount > 0 && (
         <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full">
-          {unreadCount}
+          {unreadCount > 99 ? '99+' : unreadCount}
         </span>
       )}
     </button>
@@ -164,30 +200,35 @@ const NotificationButton = () => {
         </div>
 
         <div className="max-h-96 overflow-y-auto">
-          {notifications.map((notification) => (
-            <Link
-              key={notification._id}
-              to={notification.link || '#'}
-              onClick={() => {
-                if (!notification.read) {
-                  handleMarkAsRead(notification._id);
-                }
-              }}
-              className={`block p-4 hover:bg-gray-50 border-b border-gray-200 ${
-                !notification.read ? 'bg-blue-50' : ''
-              }`}
-            >
-              <div className="flex items-start space-x-3">
-                <span className="text-xl">{getNotificationIcon(notification.type)}</span>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm text-gray-900">{notification.content}</p>
-                  <p className="text-xs text-gray-500 mt-1">
-                    {new Date(notification.createdAt).toLocaleDateString()}
-                  </p>
+          {notifications
+            .filter((notif, index, self) => 
+              // Additional filter to ensure no duplicates
+              index === self.findIndex(n => n._id === notif._id)
+            )
+            .map((notification) => (
+              <Link
+                key={notification._id}
+                to={notification.link || '#'}
+                onClick={() => {
+                  if (!notification.read) {
+                    handleMarkAsRead(notification._id);
+                  }
+                }}
+                className={`block p-4 hover:bg-gray-50 border-b border-gray-200 ${
+                  !notification.read ? 'bg-blue-50' : ''
+                }`}
+              >
+                <div className="flex items-start space-x-3">
+                  <span className="text-xl">{getNotificationIcon(notification.type)}</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-gray-900">{notification.content}</p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      {new Date(notification.createdAt).toLocaleDateString()}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            </Link>
-          ))}
+              </Link>
+            ))}
         </div>
 
         <div className="p-3 text-center border-t border-gray-200">

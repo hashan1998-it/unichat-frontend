@@ -1,4 +1,3 @@
-// src/components/Connections/ConnectionRequests.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../utils/api';
@@ -8,7 +7,7 @@ import Card from '../common/Card';
 import LoadingSpinner from '../common/LoadingSpinner';
 import EmptyState from '../common/EmptyState';
 import Notification from '../common/Notification';
-import { Check, Close} from '@mui/icons-material';
+import { Check, Close } from '@mui/icons-material';
 
 const ConnectionRequests = () => {
   const [requests, setRequests] = useState([]);
@@ -24,16 +23,23 @@ const ConnectionRequests = () => {
     try {
       setLoading(true);
       const response = await api.get('/connections/pending');
-      setRequests(response.data || []);
+      // Filter for only pending requests where current user is the receiver
+      const pendingRequests = response.data.filter(request => 
+        request.status === 'pending' && request.sender
+      );
+      setRequests(pendingRequests);
     } catch (error) {
       console.error('Error loading requests:', error);
-      const errorMessage = error.response?.data?.message || 'Failed to load connection requests';
-      setNotification({
-        show: true,
-        message: errorMessage,
-        type: 'error'
-      });
-      setRequests([]);
+      if (error.response?.status === 404) {
+        // If endpoint doesn't exist or no requests, just set empty array
+        setRequests([]);
+      } else {
+        setNotification({
+          show: true,
+          message: 'Failed to load connection requests',
+          type: 'error'
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -42,12 +48,16 @@ const ConnectionRequests = () => {
   const handleAccept = async (requestId) => {
     try {
       await api.post(`/connections/accept/${requestId}`);
-      setRequests(requests.filter(request => request._id !== requestId));
+      setRequests(prevRequests => prevRequests.filter(request => request._id !== requestId));
       setNotification({
         show: true,
         message: 'Connection request accepted',
         type: 'success'
       });
+      // Reload the parent component to update connections
+      if (window.location.pathname.includes('/profile')) {
+        window.location.reload();
+      }
     } catch (error) {
       console.error('Error accepting request:', error);
       setNotification({
@@ -60,8 +70,8 @@ const ConnectionRequests = () => {
 
   const handleReject = async (requestId) => {
     try {
-      await api.post(`/connections/reject/${requestId}`);
-      setRequests(requests.filter(request => request._id !== requestId));
+      await api.delete(`/connections/cancel/${requestId}`);
+      setRequests(prevRequests => prevRequests.filter(request => request._id !== requestId));
       setNotification({
         show: true,
         message: 'Connection request rejected',
@@ -129,6 +139,11 @@ const ConnectionRequests = () => {
                   <p className="text-sm text-gray-500">
                     {sender.universityId || 'No University ID'}
                   </p>
+                  {sender.role && (
+                    <p className="text-xs text-gray-600 mt-1">
+                      {sender.role.charAt(0).toUpperCase() + sender.role.slice(1)}
+                    </p>
+                  )}
                 </div>
               </div>
               <div className="flex gap-2">

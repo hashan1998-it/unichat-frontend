@@ -46,23 +46,54 @@ const Explore = () => {
 
   const loadUsers = async () => {
     try {
+      setLoading(true);
       const response = await api.get('/search/users?query=');
-      const filteredUsers = response.data.filter(user => user._id !== currentUser._id);
+      const allUsers = response.data || [];
+      const filteredUsers = allUsers.filter(user => user._id !== currentUser._id);
       
-      // Try to get pending requests, but handle errors gracefully
-      let pendingRequests = [];
+      // Get current user's connections
+      let currentUserConnections = [];
+      try {
+        const profileResponse = await api.get(`/users/profile/${currentUser._id}`);
+        currentUserConnections = profileResponse.data.connections || [];
+      } catch (error) {
+        console.log('Could not fetch user profile:', error);
+      }
 
+      // Get pending requests
+      let pendingRequests = [];
+      try {
         const pendingResponse = await api.get('/connections/pending');
         pendingRequests = pendingResponse.data || [];
+      } catch (error) {
+        console.log('Could not fetch pending requests:', error);
+      }
 
       // Add connection status to users
       const usersWithStatus = filteredUsers.map(user => {
+        // Check if already connected (check both user's connections arrays)
+        const isConnected = currentUserConnections.includes(user._id) || 
+                          user.connections?.includes(currentUser._id);
+        
+        // Check for pending requests (both sent and received)
         const pendingRequest = pendingRequests.find(
-          request => request.sender._id === currentUser._id && request.receiver._id === user._id
+          request => 
+            (request.sender._id === currentUser._id && request.receiver._id === user._id) ||
+            (request.sender._id === user._id && request.receiver._id === currentUser._id)
         );
+        
+        let connectionStatus = 'none';
+        if (isConnected) {
+          connectionStatus = 'connected';
+        } else if (pendingRequest) {
+          // Determine if current user sent or received the request
+          connectionStatus = pendingRequest.sender._id === currentUser._id ? 'pending' : 'received';
+        }
+        
         return {
           ...user,
-          connectionStatus: pendingRequest ? 'pending' : 'none'
+          connectionStatus,
+          pendingRequestId: pendingRequest?._id
         };
       });
       
@@ -102,28 +133,78 @@ const Explore = () => {
     setFilteredUsers(filtered);
   };
 
-  const handleConnectionRequest = async (userId) => {
+  const acceptRequest = async (userId) => {
     try {
-      // Check for existing pending request
+      // Get the existing request
       const pendingResponse = await api.get('/connections/pending');
       const existingRequest = pendingResponse.data.find(
-        request => request.sender._id === currentUser._id && request.receiver._id === userId
+        request => request.sender._id === userId && request.receiver._id === currentUser._id
       );
 
       if (existingRequest) {
-        // If request exists, cancel it
-        await api.post(`/connections/reject/${existingRequest._id}`);
-        showNotification('Connection request canceled');
+        // Accept the request
+        await api.post(`/connections/accept/${existingRequest._id}`);
+        showNotification('Connection request accepted');
         
         // Update the UI
         setUsers(prevUsers => 
           prevUsers.map(user => {
             if (user._id === userId) {
-              return { ...user, connectionStatus: 'none' };
+              return { ...user, connectionStatus: 'connected' };
             }
             return user;
           })
         );
+        setFilteredUsers(prevUsers => 
+          prevUsers.map(user => {
+            if (user._id === userId) {
+              return { ...user, connectionStatus: 'connected' };
+            }
+            return user;
+          })
+        );
+      }
+    } catch (error) {
+      showNotification(error.response?.data?.message || 'Failed to accept request', 'error');
+    }
+  };
+
+  const handleConnectionRequest = async (userId) => {
+    try {
+      const targetUser = users.find(u => u._id === userId);
+      
+      if (targetUser?.connectionStatus === 'pending' || targetUser?.connectionStatus === 'received') {
+        // Get the existing request
+        const pendingResponse = await api.get('/connections/pending');
+        const existingRequest = pendingResponse.data.find(
+          request => 
+            (request.sender._id === currentUser._id && request.receiver._id === userId) ||
+            (request.sender._id === userId && request.receiver._id === currentUser._id)
+        );
+
+        if (existingRequest) {
+          // Cancel the request
+          await api.delete(`/connections/cancel/${existingRequest._id}`);
+          showNotification('Connection request cancelled');
+          
+          // Update the UI
+          setUsers(prevUsers => 
+            prevUsers.map(user => {
+              if (user._id === userId) {
+                return { ...user, connectionStatus: 'none' };
+              }
+              return user;
+            })
+          );
+          setFilteredUsers(prevUsers => 
+            prevUsers.map(user => {
+              if (user._id === userId) {
+                return { ...user, connectionStatus: 'none' };
+              }
+              return user;
+            })
+          );
+        }
       } else {
         // Send new request
         await api.post(`/connections/send/${userId}`);
@@ -138,9 +219,17 @@ const Explore = () => {
             return user;
           })
         );
+        setFilteredUsers(prevUsers => 
+          prevUsers.map(user => {
+            if (user._id === userId) {
+              return { ...user, connectionStatus: 'pending' };
+            }
+            return user;
+          })
+        );
       }
     } catch (error) {
-      showNotification(error.response?.data?.message || 'Failed to send connection request', 'error');
+      showNotification(error.response?.data?.message || 'Failed to process request', 'error');
     }
   };
 

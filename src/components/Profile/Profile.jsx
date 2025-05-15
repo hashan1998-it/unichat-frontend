@@ -6,6 +6,7 @@ import { useAuth } from '../../context/AuthContext';
 import Post from '../Dashboard/Post';
 import ConnectionRequests from '../Connections/ConnectionRequests';
 import ConnectionsList from '../Connections/ConnectionsList';
+import ConnectionButton from './ConnectionButton';
 import Button from '../common/Button';
 import Card from '../common/Card';
 import Avatar from '../common/Avatar';
@@ -42,19 +43,6 @@ const Profile = () => {
     }
   };
 
-  const handleFollow = async () => {
-    const isFollowing = user.followers.some(
-      (follower) => follower._id === currentUser._id
-    );
-    
-    try {
-      await api.post(`/users/${isFollowing ? 'unfollow' : 'follow'}/${userId}`);
-      loadProfile();
-    } catch (error) {
-      console.error('Failed to follow/unfollow:', error);
-    }
-  };
-
   const handleSaveProfile = async () => {
     try {
       await api.put('/users/profile', { bio });
@@ -66,10 +54,6 @@ const Profile = () => {
   };
 
   if (!user) return <LoadingSpinner message="Loading profile..." />;
-
-  const isFollowing = user.followers.some(
-    (follower) => follower._id === currentUser?._id
-  );
 
   return (
     <div className="space-y-6">
@@ -117,12 +101,11 @@ const Profile = () => {
             
             <div className="mt-4">
               {!isOwnProfile && (
-                <Button
-                  variant={isFollowing ? 'danger' : 'primary'}
-                  onClick={handleFollow}
-                >
-                  {isFollowing ? 'Unfollow' : 'Follow'}
-                </Button>
+                <ConnectionButton 
+                  userId={userId} 
+                  currentUserId={currentUser._id}
+                  onStatusChange={loadProfile}
+                />
               )}
               {isOwnProfile && (
                 <Button onClick={() => setEditMode(true)}>

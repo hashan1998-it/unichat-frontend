@@ -28,7 +28,10 @@ const Post = ({ post: initialPost, onUpdate }) => {
   const [imageLoading, setImageLoading] = useState(true);
   const { user } = useAuth();
 
-  const isLiked = post.likes.includes(user?._id);
+  const isLiked = post.likes.some(likeId => 
+    likeId === user?._id || 
+    (typeof likeId === 'object' && likeId._id === user?._id)
+  );
 
   // Format time for display
   const formatTime = (date) => {

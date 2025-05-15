@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Header from './components/Layout/Header';
@@ -58,17 +58,19 @@ const Dashboard = () => {
 
 const AppContent = () => {
   const { user, isAuthenticated } = useAuth();
+  const socketConnected = useRef(false);
   
   useEffect(() => {
-    if (user && isAuthenticated) {
-      // Initialize socket connection when user is available
+    if (user && isAuthenticated && !socketConnected.current) {
+      // Initialize socket connection only once
       socket.connect();
-      socket.emit('join', user._id);
+      socketConnected.current = true;
     }
     
     return () => {
-      if (socket.socket?.connected) {
+      if (socketConnected.current) {
         socket.disconnect();
+        socketConnected.current = false;
       }
     };
   }, [user, isAuthenticated]);

@@ -192,91 +192,114 @@ const Explore = () => {
         onClose={() => setNotification({ show: false, message: '', type: '' })}
       />
 
-      {/* Header */}
-      <Card>
+      {/* Redesigned Header */}
+      <div className="bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 p-6 rounded-2xl shadow-lg">
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center space-y-4 lg:space-y-0">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 flex items-center">
-              <SparklesIcon className="h-8 w-8 text-purple-500 mr-3" />
-              Explore
-            </h1>
-            <p className="text-gray-600 mt-1">Connect with students and professors</p>
+          {/* Icon and subtitle */}
+          <div className="flex items-center space-x-3">
+            <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
+              <SparklesIcon className="h-8 w-8 text-white" />
+            </div>
+            <p className="text-white/90 text-lg font-medium">Connect with students and professors</p>
           </div>
           
           <div className="w-full lg:w-auto flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4">
-            {/* Search Bar */}
+            {/* Enhanced Search Bar */}
             <div className="relative flex-1 sm:flex-initial">
               <input
                 type="text"
                 placeholder="Search users..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full sm:w-72 pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                className="w-full sm:w-80 pl-12 pr-4 py-3 bg-white/90 backdrop-blur-sm border border-white/30 rounded-full text-gray-900 placeholder-gray-600 focus:ring-2 focus:ring-white/50 focus:border-transparent focus:bg-white transition-all"
               />
-              <MagnifyingGlassIcon className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
+              <MagnifyingGlassIcon className="absolute left-4 top-3.5 h-5 w-5 text-gray-600" />
             </div>
 
             {/* Mobile Filter Toggle */}
             <Button
               variant="secondary"
               onClick={() => setShowFilters(!showFilters)}
-              className="sm:hidden"
+              className="sm:hidden bg-white/20 backdrop-blur-sm border-white/30 text-white hover:bg-white/30"
             >
               <FunnelIcon className="h-5 w-5 mr-2" />
               Filters
             </Button>
 
-            {/* Desktop Filter Buttons */}
-            <div className="hidden sm:flex space-x-2">
-              <Button
+            {/* Desktop Filter Pills */}
+            <div className="hidden sm:flex items-center bg-white/10 backdrop-blur-sm rounded-full p-1">
+              <button
                 onClick={() => setFilter('all')}
-                variant={filter === 'all' ? 'primary' : 'secondary'}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                  filter === 'all' 
+                    ? 'bg-white text-gray-900 shadow-md' 
+                    : 'text-white hover:bg-white/20'
+                }`}
               >
                 All
-              </Button>
-              <Button
+              </button>
+              <button
                 onClick={() => setFilter('student')}
-                variant={filter === 'student' ? 'primary' : 'secondary'}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                  filter === 'student' 
+                    ? 'bg-white text-gray-900 shadow-md' 
+                    : 'text-white hover:bg-white/20'
+                }`}
               >
+                <BriefcaseIcon className="h-4 w-4 inline mr-1" />
                 Students
-              </Button>
-              <Button
+              </button>
+              <button
                 onClick={() => setFilter('professor')}
-                variant={filter === 'professor' ? 'primary' : 'secondary'}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                  filter === 'professor' 
+                    ? 'bg-white text-gray-900 shadow-md' 
+                    : 'text-white hover:bg-white/20'
+                }`}
               >
+                <AcademicCapIcon className="h-4 w-4 inline mr-1" />
                 Professors
-              </Button>
+              </button>
             </div>
           </div>
         </div>
 
-        {/* Mobile Filter Buttons */}
+        {/* Mobile Filter Pills */}
         {showFilters && (
-          <div className="sm:hidden mt-4 flex space-x-2">
-            <Button
+          <div className="sm:hidden mt-4 flex items-center bg-white/10 backdrop-blur-sm rounded-full p-1">
+            <button
               onClick={() => setFilter('all')}
-              variant={filter === 'all' ? 'primary' : 'secondary'}
-              fullWidth
+              className={`flex-1 px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                filter === 'all' 
+                  ? 'bg-white text-gray-900 shadow-md' 
+                  : 'text-white hover:bg-white/20'
+              }`}
             >
               All
-            </Button>
-            <Button
+            </button>
+            <button
               onClick={() => setFilter('student')}
-              variant={filter === 'student' ? 'primary' : 'secondary'}
-              fullWidth
+              className={`flex-1 px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                filter === 'student' 
+                  ? 'bg-white text-gray-900 shadow-md' 
+                  : 'text-white hover:bg-white/20'
+              }`}
             >
               Students
-            </Button>
-            <Button
+            </button>
+            <button
               onClick={() => setFilter('professor')}
-              variant={filter === 'professor' ? 'primary' : 'secondary'}
-              fullWidth
+              className={`flex-1 px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                filter === 'professor' 
+                  ? 'bg-white text-gray-900 shadow-md' 
+                  : 'text-white hover:bg-white/20'
+              }`}
             >
               Professors
-            </Button>
+            </button>
           </div>
         )}
-      </Card>
+      </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

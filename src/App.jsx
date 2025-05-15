@@ -51,7 +51,6 @@ const Dashboard = () => {
   
   return (
     <div className="max-w-6xl mx-auto py-4 px-3 sm:px-4">
-      <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">Home</h1>
       <Feed key={feedKey} />
     </div>
   );

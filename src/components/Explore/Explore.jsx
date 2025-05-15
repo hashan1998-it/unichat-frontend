@@ -49,10 +49,12 @@ const Explore = () => {
       const response = await api.get('/search/users?query=');
       const filteredUsers = response.data.filter(user => user._id !== currentUser._id);
       
-      // Get pending requests to set connection status
-      const pendingResponse = await api.get('/connections/pending');
-      const pendingRequests = pendingResponse.data;
-      
+      // Try to get pending requests, but handle errors gracefully
+      let pendingRequests = [];
+
+        const pendingResponse = await api.get('/connections/pending');
+        pendingRequests = pendingResponse.data || [];
+
       // Add connection status to users
       const usersWithStatus = filteredUsers.map(user => {
         const pendingRequest = pendingRequests.find(

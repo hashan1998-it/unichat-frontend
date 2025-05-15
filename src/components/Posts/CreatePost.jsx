@@ -22,6 +22,7 @@ const CreatePost = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
 
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -36,10 +37,15 @@ const CreatePost = () => {
     }
 
     try {
-      await api.post('/posts', formData);
+      const response = await api.post('/posts', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
       navigate('/dashboard');
     } catch (error) {
       console.error('Failed to create post:', error);
+      console.error('Error response:', error.response?.data);
     } finally {
       setIsSubmitting(false);
     }

@@ -41,6 +41,9 @@ const Feed = () => {
       );
     });
     
+    // Initialize socket connection
+    socketService.connect();
+    
     return () => {
       newPostCleanup();
       postUpdateCleanup();

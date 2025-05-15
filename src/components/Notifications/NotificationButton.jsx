@@ -15,16 +15,12 @@ const NotificationButton = () => {
 
   const fetchNotifications = async () => {
     try {
-      console.log('Fetching notifications...');
       setLoading(true);
       setError(null);
       const response = await api.get('/notifications');
-      console.log('Notifications response:', response.data);
-      setNotifications(response.data);
+      setNotifications(response.data || []);
     } catch (error) {
-      console.error('Error fetching notifications:', error);
       if (error.response?.status === 404) {
-        // If endpoint doesn't exist, show empty state instead of error
         setNotifications([]);
         setError(null);
       } else {
@@ -37,9 +33,7 @@ const NotificationButton = () => {
 
   const fetchUnreadCount = async () => {
     try {
-      console.log('Fetching unread count...');
       const response = await api.get('/notifications/unread/count');
-      console.log('Unread count response:', response.data);
       setUnreadCount(response.data.count);
     } catch (error) {
       console.error('Error fetching unread count:', error);
@@ -51,26 +45,22 @@ const NotificationButton = () => {
   };
 
   useEffect(() => {
-    console.log('NotificationButton mounted');
     fetchNotifications();
     fetchUnreadCount();
 
     // Set up socket listener for real-time notifications
     const cleanup = socketService.onNotification((notification) => {
-      console.log('Received real-time notification:', notification);
       setNotifications(prev => [notification, ...prev]);
       setUnreadCount(prev => prev + 1);
     });
 
     return () => {
-      console.log('NotificationButton unmounting');
       cleanup();
     };
   }, []);
 
   const handleMarkAsRead = async (notificationId) => {
     try {
-      console.log('Marking notification as read:', notificationId);
       await api.put(`/notifications/${notificationId}/read`);
       setNotifications(notifications.map(notification =>
         notification._id === notificationId
@@ -85,7 +75,6 @@ const NotificationButton = () => {
 
   const handleMarkAllAsRead = async () => {
     try {
-      console.log('Marking all notifications as read');
       await api.put('/notifications/read/all');
       setNotifications(notifications.map(notification => ({
         ...notification,

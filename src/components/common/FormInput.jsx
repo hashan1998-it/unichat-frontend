@@ -17,6 +17,11 @@ const FormInput = ({
   className = '',
   ...props
 }) => {
+  // Determine the actual input type
+  const inputType = showPasswordToggle 
+    ? (showPassword ? 'text' : 'password')
+    : type;
+
   return (
     <div className={className}>
       {label && (
@@ -32,7 +37,7 @@ const FormInput = ({
         )}
         
         <input
-          type={showPasswordToggle && !showPassword ? 'password' : type}
+          type={inputType}
           value={value}
           onChange={onChange}
           placeholder={placeholder}
@@ -49,7 +54,7 @@ const FormInput = ({
           <button
             type="button"
             onClick={onTogglePassword}
-            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
           >
             {showPassword ? (
               <EyeSlashIcon className="h-5 w-5" />

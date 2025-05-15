@@ -78,7 +78,6 @@ const Post = ({ post: initialPost, onUpdate }) => {
       });
       setPost(response.data);
       setCommentText('');
-      if (onUpdate) onUpdate();
     } catch (error) {
       console.error('Failed to add comment:', error);
     }
@@ -251,34 +250,39 @@ const Post = ({ post: initialPost, onUpdate }) => {
             </div>
           </form>
           
-          {/* Display comments */}
+          {/* Display comments - Fixed with unique key generation */}
           <div className="space-y-3">
             {post.comments
               .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-              .map((comment) => (
-              <div key={comment._id} className="flex space-x-3">
-                <Avatar
-                  src={comment.user?.profilePicture}
-                  username={comment.user?.username || 'Anonymous'}
-                  userId={comment.user?._id}
-                  isLink
-                  size="small"
-                />
-                <div className="flex-1">
-                  <div className="bg-white p-3 rounded-lg">
-                    <Link to={`/profile/${comment.user?._id}`}>
-                      <p className="text-sm font-semibold text-gray-900 hover:text-blue-600 transition-colors">
-                        {comment.user?.username || 'Anonymous'}
+              .map((comment, index) => {
+                // Generate unique key using both _id and index as fallback
+                const uniqueKey = comment._id ? `${comment._id}-${index}` : `comment-${index}-${Date.now()}`;
+                
+                return (
+                  <div key={uniqueKey} className="flex space-x-3">
+                    <Avatar
+                      src={comment.user?.profilePicture}
+                      username={comment.user?.username || 'Anonymous'}
+                      userId={comment.user?._id}
+                      isLink
+                      size="small"
+                    />
+                    <div className="flex-1">
+                      <div className="bg-white p-3 rounded-lg">
+                        <Link to={`/profile/${comment.user?._id}`}>
+                          <p className="text-sm font-semibold text-gray-900 hover:text-blue-600 transition-colors">
+                            {comment.user?.username || 'Anonymous'}
+                          </p>
+                        </Link>
+                        <p className="text-sm text-gray-700 mt-1">{comment.content}</p>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1 ml-3">
+                        {formatTime(comment.createdAt)}
                       </p>
-                    </Link>
-                    <p className="text-sm text-gray-700 mt-1">{comment.content}</p>
+                    </div>
                   </div>
-                  <p className="text-xs text-gray-500 mt-1 ml-3">
-                    {formatTime(comment.createdAt)}
-                  </p>
-                </div>
-              </div>
-            ))}
+                );
+              })}
           </div>
         </div>
       )}

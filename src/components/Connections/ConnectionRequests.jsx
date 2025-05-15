@@ -24,7 +24,6 @@ const ConnectionRequests = () => {
     try {
       setLoading(true);
       const response = await api.get('/connections/pending');
-      console.log('Pending requests response:', response.data);
       setRequests(response.data || []);
     } catch (error) {
       console.error('Error loading requests:', error);

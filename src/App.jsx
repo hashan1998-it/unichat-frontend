@@ -57,13 +57,21 @@ const Dashboard = () => {
 };
 
 const AppContent = () => {
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   
   useEffect(() => {
-    if (user) {
+    if (user && isAuthenticated) {
+      // Initialize socket connection when user is available
+      socket.connect();
       socket.emit('join', user._id);
     }
-  }, [user]);
+    
+    return () => {
+      if (socket.socket?.connected) {
+        socket.disconnect();
+      }
+    };
+  }, [user, isAuthenticated]);
   
   return (
     <Router>

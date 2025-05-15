@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'http://localhost:5000/api',
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
   headers: {
     'Content-Type': 'application/json'
   }
@@ -14,6 +14,19 @@ api.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    
+    // Don't override Content-Type for FormData
+    if (config.data instanceof FormData) {
+      delete config.headers['Content-Type'];
+    }
+    
+    console.log('Request config:', {
+      url: config.url,
+      method: config.method,
+      headers: config.headers,
+      data: config.data
+    });
+    
     return config;
   },
   (error) => {
@@ -31,7 +44,8 @@ api.interceptors.response.use(
     // Handle token expiration
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
-      window.location.href = '/login';
+      localStorage.removeItem('userId');
+      window.location.href = '/';
     }
     
     return Promise.reject(error);

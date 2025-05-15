@@ -1,7 +1,7 @@
 import { io } from 'socket.io-client';
 import { getToken } from '@utils/auth';
 
-const SOCKET_URL = 'http://localhost:5000';
+const SOCKET_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
 
 class SocketService {
   constructor() {

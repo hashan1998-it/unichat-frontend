@@ -1,4 +1,3 @@
-// src/components/Dashboard/Post.jsx
 import { useState, useEffect } from 'react';
 import api from '../../utils/api';
 import { useAuth } from '../../context/AuthContext';
@@ -14,7 +13,11 @@ import {
   ChatBubbleLeftIcon,
   ShareIcon,
   BookmarkIcon,
-  EllipsisHorizontalIcon 
+  EllipsisHorizontalIcon,
+  PaperAirplaneIcon,
+  AcademicCapIcon,
+  CalendarIcon,
+  SparklesIcon 
 } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartSolid } from '@heroicons/react/24/solid';
 
@@ -82,15 +85,15 @@ const Post = ({ post: initialPost, onUpdate }) => {
   };
 
   const menuTrigger = (
-    <button className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+    <button className="p-2 hover:bg-gray-100 rounded-full transition-colors relative z-10">
       <EllipsisHorizontalIcon className="h-5 w-5 text-gray-500" />
     </button>
   );
 
   return (
-    <Card hoverable className="mb-4 overflow-hidden">
+    <Card hoverable className="mb-4 overflow-hidden relative">
       {/* Post Header */}
-      <div className="p-4">
+      <div className="p-4 overflow-visible">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <Avatar
@@ -168,56 +171,54 @@ const Post = ({ post: initialPost, onUpdate }) => {
         </div>
       )}
 
-      {/* Interaction Stats */}
-      {(post.likes.length > 0 || post.comments.length > 0) && (
-        <div className="px-4 py-2 flex items-center justify-between text-sm text-gray-500">
-          <div className="flex items-center space-x-4">
-            {post.likes.length > 0 && (
-              <button className="hover:text-gray-700 transition-colors">
-                {post.likes.length} {post.likes.length === 1 ? 'like' : 'likes'}
-              </button>
-            )}
-          </div>
-          {post.comments.length > 0 && (
-            <button
-              onClick={() => setShowComments(!showComments)}
-              className="hover:text-gray-700 transition-colors"
-            >
-              {post.comments.length} {post.comments.length === 1 ? 'comment' : 'comments'}
-            </button>
-          )}
-        </div>
-      )}
-
       {/* Action Buttons */}
       <div className="border-t border-gray-100 px-4 py-1">
-        <div className="flex items-center justify-around">
-          <button 
-            onClick={handleLike}
-            className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all ${
-              isLiked ? 'text-red-600' : 'text-gray-600 hover:text-red-600 hover:bg-red-50'
-            }`}
-          >
-            {isLiked ? (
-              <HeartSolid className="h-6 w-6" />
-            ) : (
-              <HeartIcon className="h-6 w-6" />
+        <div className="flex items-center justify-between">
+          {/* Left Side - Stats */}
+          <div className="flex items-center space-x-4 text-sm text-gray-500">
+            {post.likes.length > 0 && (
+              <div className="flex items-center space-x-1">
+                <HeartIcon className="h-5 w-5" />
+                <span>{post.likes.length}</span>
+              </div>
             )}
-            <span className="text-sm font-medium">Like</span>
-          </button>
-          
-          <button 
-            onClick={() => setShowComments(!showComments)}
-            className="flex items-center space-x-2 px-4 py-2 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-all"
-          >
-            <ChatBubbleLeftIcon className="h-6 w-6" />
-            <span className="text-sm font-medium">Comment</span>
-          </button>
+            {post.comments.length > 0 && (
+              <div className="flex items-center space-x-1">
+                <ChatBubbleLeftIcon className="h-5 w-5" />
+                <span>{post.comments.length}</span>
+              </div>
+            )}
+          </div>
 
-          <button className="flex items-center space-x-2 px-4 py-2 rounded-lg text-gray-600 hover:text-green-600 hover:bg-green-50 transition-all">
-            <ShareIcon className="h-6 w-6" />
-            <span className="text-sm font-medium">Share</span>
-          </button>
+          {/* Right Side - Action Buttons */}
+          <div className="flex items-center space-x-2">
+            <button 
+              onClick={handleLike}
+              className={`flex items-center space-x-1 px-3 py-2 rounded-lg transition-all ${
+                isLiked ? 'text-red-600' : 'text-gray-600 hover:text-red-600 hover:bg-red-50'
+              }`}
+            >
+              {isLiked ? (
+                <HeartSolid className="h-6 w-6" />
+              ) : (
+                <HeartIcon className="h-6 w-6" />
+              )}
+              <span className="text-sm font-medium">Like</span>
+            </button>
+            
+            <button 
+              onClick={() => setShowComments(!showComments)}
+              className="flex items-center space-x-1 px-3 py-2 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-all"
+            >
+              <ChatBubbleLeftIcon className="h-6 w-6" />
+              <span className="text-sm font-medium">Comment</span>
+            </button>
+
+            <button className="flex items-center space-x-1 px-3 py-2 rounded-lg text-gray-600 hover:text-green-600 hover:bg-green-50 transition-all">
+              <ShareIcon className="h-6 w-6" />
+              <span className="text-sm font-medium">Share</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -231,14 +232,21 @@ const Post = ({ post: initialPost, onUpdate }) => {
                 username={user?.username}
                 size="small"
               />
-              <div className="flex-1">
+              <div className="flex-1 relative">
                 <input
                   type="text"
                   value={commentText}
                   onChange={(e) => setCommentText(e.target.value)}
                   placeholder="Write a comment..."
-                  className="w-full px-4 py-2 text-sm border border-gray-300 rounded-full focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-2 pr-12 text-sm border border-gray-300 rounded-full focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
+                <button
+                  type="submit"
+                  disabled={!commentText.trim()}
+                  className="absolute right-1 top-1/2 -translate-y-1/2 p-1.5 rounded-full text-blue-600 hover:bg-blue-50 disabled:text-gray-400 disabled:hover:bg-transparent transition-all"
+                >
+                  <PaperAirplaneIcon className="h-5 w-5" />
+                </button>
               </div>
             </div>
           </form>

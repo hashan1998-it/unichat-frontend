@@ -22,8 +22,8 @@ const Dropdown = ({
   }, []);
 
   const positions = {
-    'bottom-right': 'right-0 mt-2',
-    'bottom-left': 'left-0 mt-2',
+    'bottom-right': 'right-0 mt-2 top-full',
+    'bottom-left': 'left-0 mt-2 top-full',
     'top-right': 'right-0 bottom-full mb-2',
     'top-left': 'left-0 bottom-full mb-2'
   };
@@ -43,11 +43,27 @@ const Dropdown = ({
       {isOpen && (
         <>
           <div
-            className="fixed inset-0 z-30"
+            className="fixed inset-0 z-40"
             onClick={() => setIsOpen(false)}
           />
           <div 
-            className={`absolute ${positions[position]} bg-white rounded-lg shadow-lg overflow-hidden z-40 border border-gray-100 ${className}`}
+            className={`
+              absolute 
+              ${positions[position]} 
+              bg-white 
+              rounded-lg 
+              shadow-xl 
+              overflow-hidden 
+              z-50 
+              border 
+              border-gray-100 
+              min-w-[200px]
+              py-1
+              ${className}
+            `}
+            style={{
+              boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
+            }}
             onClick={handleItemClick}
           >
             {children}

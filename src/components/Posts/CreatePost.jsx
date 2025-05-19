@@ -124,7 +124,6 @@ const CreatePost = () => {
             >
               {isSubmitting ? (
                 <>
-                  <LoadingSpinner size="small" showMessage={false} className="inline mr-2" />
                   Posting...
                 </>
               ) : (
